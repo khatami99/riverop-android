@@ -48,7 +48,7 @@ data class KabupatenModel(
     val id: Int,
     val nama: String,
     val kode: String,
-    val aktif: Int
+    val aktif: Boolean
 )
 
 data class WilayahSungaiModel(
@@ -56,7 +56,7 @@ data class WilayahSungaiModel(
     val kabupaten_id: Int,
     val nama_sungai: String,
     val kode_sungai: String,
-    val aktif: Int
+    val aktif: Boolean
 )
 
 data class JenisBangunanModel(
@@ -64,7 +64,7 @@ data class JenisBangunanModel(
     val kode: String,
     val nama: String,
     val tipe_konstruksi: String?,
-    val aktif: Int,
+    val aktif: Boolean,
     val urutan: Int
 )
 
@@ -73,7 +73,7 @@ data class BagianBangunanModel(
     val jenis_bangunan_id: Int,
     val nama: String,
     val urutan: Int,
-    val aktif: Int
+    val aktif: Boolean
 )
 
 data class PilihanKondisiModel(
@@ -81,7 +81,7 @@ data class PilihanKondisiModel(
     val bagian_bangunan_id: Int,
     val kondisi: String,
     val urutan: Int,
-    val aktif: Int
+    val aktif: Boolean
 )
 
 data class LaporanSyncRequest(

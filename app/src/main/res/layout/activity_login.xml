@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="#F5F5F5">
+    android:background="@color/background">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -29,7 +29,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="Sistem Pelaporan OP Sungai"
-            android:textColor="#212121"
+            android:textColor="@color/text_primary"
             android:textSize="24sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
@@ -42,7 +42,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:text="Dinas PUPR Provinsi Kalimantan Selatan"
-            android:textColor="#757575"
+            android:textColor="@color/text_secondary"
             android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -55,22 +55,23 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="40dp"
             android:hint="Username"
+            android:textColorHint="@color/text_secondary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tvSubtitle"
             app:startIconDrawable="@android:drawable/ic_menu_myplaces"
-            app:boxStrokeColor="#9E9E9E"
-            app:hintTextColor="#757575"
-            app:startIconTint="#757575">
+            app:boxStrokeColor="@color/text_hint"
+            app:hintTextColor="@color/text_secondary"
+            app:startIconTint="@color/text_secondary">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etUsername"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="text"
-                android:textColor="#212121"
+                android:textColor="@color/text_primary"
                 android:maxLines="1"
-                android:textColorHint="#9E9E9E"/>
+                android:textColorHint="@color/text_hint" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -80,23 +81,24 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:hint="Password"
+            android:textColorHint="@color/text_secondary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tilUsername"
             app:endIconMode="password_toggle"
             app:startIconDrawable="@android:drawable/ic_lock_idle_lock"
-            app:boxStrokeColor="#9E9E9E"
-            app:hintTextColor="#757575"
-            app:startIconTint="#757575">
+            app:boxStrokeColor="@color/text_hint"
+            app:hintTextColor="@color/text_secondary"
+            app:startIconTint="@color/text_secondary">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etPassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textPassword"
-                android:textColor="#212121"
+                android:textColor="@color/text_primary"
                 android:maxLines="1"
-                android:textColorHint="#9E9E9E"/>
+                android:textColorHint="@color/text_hint" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.button.MaterialButton
@@ -105,6 +107,8 @@
             android:layout_height="56dp"
             android:layout_marginTop="32dp"
             android:text="Masuk"
+            android:textColor="@color/white"
+            android:backgroundTint="@color/primary"
             android:textSize="16sp"
             android:textStyle="bold"
             app:cornerRadius="8dp"
@@ -117,6 +121,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:visibility="gone"
+            android:indeterminateTint="@color/primary"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

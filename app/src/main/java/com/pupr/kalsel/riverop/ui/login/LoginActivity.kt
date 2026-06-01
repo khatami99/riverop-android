@@ -1,5 +1,6 @@
 package com.pupr.kalsel.riverop.ui.login
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -8,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.pupr.kalsel.riverop.MainActivity
 import com.pupr.kalsel.riverop.databinding.ActivityLoginBinding
+import com.pupr.kalsel.riverop.ui.dashboard.DashboardActivity
 
 class LoginActivity : AppCompatActivity() {
 
@@ -16,6 +18,13 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val sharedPrefs = getSharedPreferences("river_op_prefs", Context.MODE_PRIVATE)
+        val authToken = sharedPrefs.getString("auth_token", null)
+        if (!authToken.isNullOrEmpty()) {
+            startActivity(Intent(this, DashboardActivity::class.java))
+            finish()
+            return
+        }
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -29,7 +38,7 @@ class LoginActivity : AppCompatActivity() {
                 is LoginState.Success -> {
                     showLoading(false)
                     Toast.makeText(this, "Login Berhasil", Toast.LENGTH_SHORT).show()
-                    val intent = Intent(this, MainActivity::class.java)
+                    val intent = Intent(this, DashboardActivity::class.java)
                     startActivity(intent)
                     finish()
                 }

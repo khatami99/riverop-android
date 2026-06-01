@@ -46,4 +46,17 @@ class LaporanRepository(private val database: RiverOpDatabase) {
             }
         }
     }
+
+    suspend fun getItemInspeksiByLaporan(laporanUuid: String): List<ItemInspeksiEntity> {
+        return itemInspeksiDao.getItemsByLaporanUuid(laporanUuid)
+    }
+
+    suspend fun getTemuanByLaporan(laporanUuid: String): List<TemuanKondisiEntity> {
+        val items = itemInspeksiDao.getItemsByLaporanUuid(laporanUuid)
+        val semua = mutableListOf<TemuanKondisiEntity>()
+        for (item in items) {
+            semua.addAll(temuanKondisiDao.getTemuansByItemUuid(item.uuid))
+        }
+        return semua
+    }
 }
