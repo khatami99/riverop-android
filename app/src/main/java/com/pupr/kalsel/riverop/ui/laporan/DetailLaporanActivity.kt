@@ -188,7 +188,7 @@ class DetailLaporanActivity : AppCompatActivity() {
 
     private fun setupActionButtons(laporan: LaporanOpEntity) {
         val isDraft = laporan.sync_status == SyncStatus.DRAFT
-        val isDeletable = laporan.sync_status == SyncStatus.LOCAL || isDraft
+        val isDeletable = laporan.sync_status != SyncStatus.SYNCED && laporan.sync_status != SyncStatus.SYNCING
 
         if (isDraft) {
             binding.tvDetailDeskripsi.visibility = View.VISIBLE
@@ -215,18 +215,28 @@ class DetailLaporanActivity : AppCompatActivity() {
     }
 
     private fun showDeleteConfirmation() {
-        AlertDialog.Builder(this)
-            .setTitle("Hapus Laporan")
-            .setMessage("Apakah Anda yakin ingin menghapus laporan ini secara permanen dari perangkat?")
-            .setPositiveButton("Hapus") { dialog, _ ->
-                dialog.dismiss()
-                deleteLaporan()
+        val uuid = laporanUuid ?: return
+        lifecycleScope.launch {
+            val laporan = repository.getLaporanByUuid(uuid) ?: return@launch
+            val pesan = when (laporan.sync_status) {
+                SyncStatus.DRAFT -> "Laporan draft ini akan dihapus permanen dari perangkat."
+                SyncStatus.LOCAL -> "Laporan ini belum tersinkronisasi. Data akan hilang permanen jika dihapus."
+                SyncStatus.FAILED -> "Laporan ini gagal disinkronisasi. Hapus dan buat ulang jika diperlukan."
+                else -> "Hapus laporan ini dari perangkat?"
             }
-            .setNegativeButton("Batal") { dialog, _ ->
-                dialog.dismiss()
-            }
-            .create()
-            .show()
+            AlertDialog.Builder(this@DetailLaporanActivity)
+                .setTitle("Hapus Laporan")
+                .setMessage(pesan)
+                .setPositiveButton("Hapus") { dialog, _ ->
+                    dialog.dismiss()
+                    deleteLaporan()
+                }
+                .setNegativeButton("Batal") { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .create()
+                .show()
+        }
     }
 
     private fun deleteLaporan() {

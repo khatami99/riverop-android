@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.pupr.kalsel.riverop.data.local.RiverOpDatabase
+import com.pupr.kalsel.riverop.data.local.entity.ItemInspeksiEntity
+import com.pupr.kalsel.riverop.data.local.entity.LaporanOpEntity
 import com.pupr.kalsel.riverop.data.local.entity.toUploadModel
 import com.pupr.kalsel.riverop.data.remote.LaporanSyncRequest
 import com.pupr.kalsel.riverop.data.remote.RetrofitClient
@@ -95,8 +97,9 @@ class SyncWorker(
 
                     if (response.isSuccessful) {
                         repo.updateSyncStatus(laporan.uuid, SyncStatus.SYNCED)
+                        deleteLocalPhotos(laporan, itemInspeksi, repo)
+                        repo.deleteLaporan(laporan.uuid)
                     } else {
-                        android.util.Log.e("SyncWorker", "Sync gagal utk ${laporan.uuid}: code=${response.code()}, body=${response.errorBody()?.string()}")
                         repo.updateSyncStatus(laporan.uuid, SyncStatus.FAILED)
                         hasFailure = true
                     }
@@ -130,6 +133,21 @@ class SyncWorker(
             if (response.isSuccessful) response.body()?.url else null
         } catch (e: Exception) {
             null
+        }
+    }
+
+    private fun deleteLocalPhotos(
+        laporan: LaporanOpEntity,
+        items: List<ItemInspeksiEntity>,
+        repo: LaporanRepository
+    ) {
+        listOfNotNull(laporan.foto_lokasi_1, laporan.foto_lokasi_2).forEach {
+            if (!it.startsWith("http")) File(it).delete()
+        }
+        items.forEach { item ->
+            listOfNotNull(item.foto_1, item.foto_2, item.foto_3).forEach {
+                if (!it.startsWith("http")) File(it).delete()
+            }
         }
     }
 }

@@ -107,7 +107,12 @@ class DashboardActivity : AppCompatActivity() {
 
     private fun setupSyncManual() {
         binding.btnSync.setOnClickListener {
+            val constraints = Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build()
+
             val syncRequest = OneTimeWorkRequestBuilder<SyncWorker>()
+                .setConstraints(constraints)
                 .build()
 
             WorkManager.getInstance(this).enqueueUniqueWork(
