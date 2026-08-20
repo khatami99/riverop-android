@@ -102,7 +102,7 @@ data class LaporanUploadModel(
     val foto_lokasi_1: String?,
     val foto_lokasi_2: String?,
     val dibuat_di_hp: String,
-    val items: List<ItemInspeksiUploadModel>
+    val item_inspeksi: List<ItemInspeksiUploadModel>
 )
 
 data class ItemInspeksiUploadModel(
@@ -118,17 +118,19 @@ data class ItemInspeksiUploadModel(
     val foto_1: String?,
     val foto_2: String?,
     val foto_3: String?,
-    val temuan: List<TemuanKondisiUploadModel>
+    val temuan_kondisi: List<TemuanKondisiUploadModel>
 )
 
 data class TemuanKondisiUploadModel(
     val bagian_bangunan_id: Int,
-    val kondisi_ditemukan: String,
+    val kondisi_ditemukan: List<String>,
     val tindakan_diperlukan: String?,
     val koordinat_lat: Double?,
     val koordinat_lng: Double?,
     val keterangan: String?,
-    val foto: String?
+    val foto: String?,
+    val foto_2: String?,
+    val foto_3: String?
 )
 
 data class LaporanSyncResponse(

@@ -1,7 +1,6 @@
 package com.pupr.kalsel.riverop.data.local.entity
 
 import com.pupr.kalsel.riverop.data.remote.ItemInspeksiUploadModel
-import com.pupr.kalsel.riverop.data.remote.LaporanSyncRequest
 import com.pupr.kalsel.riverop.data.remote.LaporanUploadModel
 import com.pupr.kalsel.riverop.data.remote.TemuanKondisiUploadModel
 import java.text.SimpleDateFormat
@@ -29,7 +28,7 @@ fun LaporanOpEntity.toUploadModel(
         foto_lokasi_2 = foto_lokasi_2,
         dibuat_di_hp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
             .format(Date(dibuat_di_hp)),
-        items = items.map { item ->
+        item_inspeksi = items.map { item ->
             item.toUploadModel(temuanByItem[item.uuid] ?: emptyList())
         }
     )
@@ -51,18 +50,25 @@ fun ItemInspeksiEntity.toUploadModel(
         foto_1 = foto_1,
         foto_2 = foto_2,
         foto_3 = foto_3,
-        temuan = temuan.map { it.toUploadModel() }
+        temuan_kondisi = temuan.map { it.toUploadModel() }
     )
 }
 
 fun TemuanKondisiEntity.toUploadModel(): TemuanKondisiUploadModel {
     return TemuanKondisiUploadModel(
         bagian_bangunan_id = bagian_bangunan_id,
-        kondisi_ditemukan = kondisi_ditemukan,
+        kondisi_ditemukan = parseKondisiStringToList(kondisi_ditemukan),
         tindakan_diperlukan = tindakan_diperlukan,
         koordinat_lat = koordinat_lat,
         koordinat_lng = koordinat_lng,
         keterangan = keterangan,
-        foto = foto
+        foto = foto,
+        foto_2 = foto_2,
+        foto_3 = foto_3
     )
+}
+
+private fun parseKondisiStringToList(kondisiStr: String?): List<String> {
+    if (kondisiStr.isNullOrBlank()) return emptyList()
+    return kondisiStr.split(",").map { it.trim() }.filter { it.isNotBlank() }
 }

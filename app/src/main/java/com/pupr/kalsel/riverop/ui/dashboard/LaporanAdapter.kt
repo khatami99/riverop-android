@@ -11,7 +11,9 @@ import com.pupr.kalsel.riverop.models.SyncStatus
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class LaporanAdapter : RecyclerView.Adapter<LaporanAdapter.LaporanViewHolder>() {
+class LaporanAdapter(
+    private val onItemClick: (LaporanOpEntity) -> Unit
+) : RecyclerView.Adapter<LaporanAdapter.LaporanViewHolder>() {
 
     private var listLaporan = emptyList<LaporanOpEntity>()
 
@@ -26,17 +28,14 @@ class LaporanAdapter : RecyclerView.Adapter<LaporanAdapter.LaporanViewHolder>() 
     }
 
     override fun onBindViewHolder(holder: LaporanViewHolder, position: Int) {
-        holder.bind(listLaporan[position])
+        holder.bind(listLaporan[position], onItemClick)
     }
 
     override fun getItemCount(): Int = listLaporan.size
 
     class LaporanViewHolder(private val binding: ItemLaporanBinding) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(laporan: LaporanOpEntity) {
-            val dayFormat = SimpleDateFormat("dd", Locale("id", "ID"))
-            val monthYearFormat = SimpleDateFormat("MMMM yyyy", Locale("id", "ID"))
-
+        fun bind(laporan: LaporanOpEntity, onItemClick: (LaporanOpEntity) -> Unit) {
             val parts = laporan.tanggal_inspeksi.split("-")
             val day = parts[2]
             val monthYear = "${getNamaBulan(parts[1].toInt())} ${parts[0]}"
@@ -55,6 +54,10 @@ class LaporanAdapter : RecyclerView.Adapter<LaporanAdapter.LaporanViewHolder>() 
 
             binding.tvStatusBadge.text = laporan.sync_status.name
             binding.cvStatus.setCardBackgroundColor(ContextCompat.getColor(binding.root.context, colorRes))
+
+            binding.root.setOnClickListener {
+                onItemClick(laporan)
+            }
         }
 
         private fun getNamaBulan(bulan: Int): String {

@@ -70,4 +70,13 @@ dependencies {
     // Lifecycle ViewModel
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
+
+    // Glide
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+
+    //OkHttp
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+
+    //PhotoView
+    implementation("io.getstream:photoview:1.0.0")
 }

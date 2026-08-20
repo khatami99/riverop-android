@@ -14,6 +14,9 @@ interface TemuanKondisiDao {
     @Query("SELECT * FROM temuan_kondisi WHERE item_inspeksi_uuid = :itemUuid")
     suspend fun getTemuansByItemUuid(itemUuid: String): List<TemuanKondisiEntity>
 
+    @Update
+    suspend fun updateTemuan(temuan: TemuanKondisiEntity)
+
     @Query("DELETE FROM temuan_kondisi WHERE item_inspeksi_uuid = :itemUuid")
     suspend fun deleteTemuansByItemUuid(itemUuid: String)
 }

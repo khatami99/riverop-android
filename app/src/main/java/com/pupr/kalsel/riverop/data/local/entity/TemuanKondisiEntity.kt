@@ -25,5 +25,7 @@ data class TemuanKondisiEntity(
     val koordinat_lat: Double?,
     val koordinat_lng: Double?,
     val keterangan: String?,
-    val foto: String?
+    val foto: String?,
+    val foto_2: String? = null,
+    val foto_3: String? = null
 )

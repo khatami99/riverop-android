@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="4dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Nama Bagian -->
+        <TextView
+            android:id="@+id/tvNamaBagian"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary"
+            android:text="Nama Bagian Bangunan" />
+
+        <!-- Kondisi: Normal atau Bermasalah -->
+        <RadioGroup
+            android:id="@+id/rgKondisi"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <RadioButton
+                android:id="@+id/rbNormal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Normal"
+                android:checked="true" />
+
+            <RadioButton
+                android:id="@+id/rbBermasalah"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="Rusak / Bermasalah" />
+
+        </RadioGroup>
+
+        <!-- Tindakan -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilTindakan"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="Tindakan yang diperlukan (opsional)">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etTindakan"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textMultiLine"
+                android:minLines="2" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Section Foto — hanya muncul kalau Bermasalah -->
+        <LinearLayout
+            android:id="@+id/layoutFotoSeksi"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="12dp"
+            android:visibility="visible">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Foto Kondisi (Wajib min. 1, maks. 3)"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Preview Foto 1 -->
+            <LinearLayout
+                android:id="@+id/layoutPreviewFoto1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/imgItemFoto1"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:scaleType="centerCrop"
+                    android:background="@color/divider" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Foto 1"
+                    android:layout_marginStart="12dp"
+                    android:textColor="@color/text_secondary" />
+
+                <ImageButton
+                    android:id="@+id/btnHapusItemFoto1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@android:drawable/ic_menu_delete"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Hapus foto 1" />
+
+            </LinearLayout>
+
+            <!-- Preview Foto 2 -->
+            <LinearLayout
+                android:id="@+id/layoutPreviewFoto2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/imgItemFoto2"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:scaleType="centerCrop"
+                    android:background="@color/divider" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Foto 2"
+                    android:layout_marginStart="12dp"
+                    android:textColor="@color/text_secondary" />
+
+                <ImageButton
+                    android:id="@+id/btnHapusItemFoto2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@android:drawable/ic_menu_delete"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Hapus foto 2" />
+
+            </LinearLayout>
+
+            <!-- Preview Foto 3 -->
+            <LinearLayout
+                android:id="@+id/layoutPreviewFoto3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/imgItemFoto3"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:scaleType="centerCrop"
+                    android:background="@color/divider" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Foto 3"
+                    android:layout_marginStart="12dp"
+                    android:textColor="@color/text_secondary" />
+
+                <ImageButton
+                    android:id="@+id/btnHapusItemFoto3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@android:drawable/ic_menu_delete"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Hapus foto 3" />
+
+            </LinearLayout>
+
+            <!-- Tombol Tambah Foto -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnTambahFoto"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="+ Tambah Foto"
+                android:layout_marginTop="4dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

@@ -26,5 +26,5 @@ interface LaporanOpDao {
     suspend fun getUnsyncedLaporan(): List<LaporanOpEntity>
 
     @Query("UPDATE laporan_op SET sync_status = :status WHERE uuid = :uuid")
-    suspend fun updateSyncStatus(uuid: String, status: SyncStatus)
+    suspend fun updateSyncStatus(uuid: String, status: String)
 }

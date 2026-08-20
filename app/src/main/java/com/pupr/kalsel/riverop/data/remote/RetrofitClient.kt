@@ -7,9 +7,10 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
 
-    private var baseUrl: String = "http://192.168.1.8:8000/" //wifi rumah
-//    private var baseUrl: String = "http://10.191.238.12:8000/"
-//    private var baseUrl: String = "http://10.236.201.177:8000/" //vivo v21
+//    private var baseUrl: String = "http://192.168.1.8:8000/" //wifi rumah
+
+    private var baseUrl: String = "http://10.164.28.177:8000/" //vivo v21
+
     private var retrofit: Retrofit? = null
 
     fun setBaseUrl(url: String) {
@@ -17,6 +18,21 @@ object RetrofitClient {
         if (baseUrl != formattedUrl) {
             baseUrl = formattedUrl
             retrofit = null
+        }
+    }
+
+    fun getBaseUrl(): String {
+        return baseUrl.removeSuffix("/")
+    }
+
+    fun resolvePhotoUrl(path: String?): String? {
+        if (path.isNullOrBlank()) return null
+        return if (path.startsWith("http")) {
+            path
+        } else if (path.startsWith("/")) {
+            getBaseUrl() + path
+        } else {
+            getBaseUrl() + "/" + path
         }
     }
 
