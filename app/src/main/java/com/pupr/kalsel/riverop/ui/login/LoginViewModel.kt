@@ -1,7 +1,6 @@
 package com.pupr.kalsel.riverop.ui.login
 
 import android.app.Application
-import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -10,6 +9,7 @@ import com.google.gson.Gson
 import com.pupr.kalsel.riverop.data.remote.LoginRequest
 import com.pupr.kalsel.riverop.data.remote.LoginResponse
 import com.pupr.kalsel.riverop.data.remote.RetrofitClient
+import com.pupr.kalsel.riverop.utils.PrefsHelper
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 
@@ -49,12 +49,12 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun saveSession(response: LoginResponse) {
-        val sharedPref = getApplication<Application>().getSharedPreferences("river_op_prefs", Context.MODE_PRIVATE)
-        sharedPref.edit().apply {
+        PrefsHelper.get(getApplication()).edit().apply {
             putString("auth_token", "Bearer ${response.token}")
             putInt("juru_sungai_id", response.user.id)
             putString("juru_sungai_nama", response.user.nama)
             putInt("wilayah_sungai_id", response.user.wilayah_sungai_id)
+            putLong("login_timestamp", System.currentTimeMillis())
             apply()
         }
     }
@@ -66,12 +66,11 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
             if (syncResponse.isSuccessful) {
                 val syncBody = syncResponse.body()
                 if (syncBody != null) {
-                    val sharedPref = getApplication<Application>().getSharedPreferences("river_op_prefs", Context.MODE_PRIVATE)
                     val gson = Gson()
                     val jsonString = gson.toJson(syncBody)
                     val namaWilayah = syncBody.data.wilayah_sungai.find { it.id == wilayahSungaiId }?.nama_sungai ?: "-"
 
-                    sharedPref.edit().apply {
+                    PrefsHelper.get(getApplication()).edit().apply {
                         putString("master_data", jsonString)
                         putString("nama_wilayah_sungai", namaWilayah)
                         apply()

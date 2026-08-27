@@ -1,21 +1,36 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# Keep line numbers for crash reports
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Gson: keep all data classes used for JSON parsing
+-keepclassmembers,allowobfuscation class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
+-keep class com.pupr.kalsel.riverop.data.remote.** { *; }
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Room: keep entity and DAO classes
+-keep class com.pupr.kalsel.riverop.data.local.entity.** { *; }
+-keep class com.pupr.kalsel.riverop.data.local.dao.** { *; }
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Enum: keep SyncStatus label field used at runtime
+-keepclassmembers enum com.pupr.kalsel.riverop.models.** {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+    <fields>;
+}
+
+# Retrofit
+-keepattributes Signature
+-keepattributes Exceptions
+-keep class retrofit2.** { *; }
+-keepclasseswithmembers class * {
+    @retrofit2.http.* <methods>;
+}
+
+# OkHttp
+-dontwarn okhttp3.**
+-dontwarn okio.**
+
+# Kotlin
+-keep class kotlin.Metadata { *; }
+-dontwarn kotlin.**

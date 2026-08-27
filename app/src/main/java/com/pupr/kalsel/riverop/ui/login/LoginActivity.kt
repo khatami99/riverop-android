@@ -10,6 +10,9 @@ import androidx.lifecycle.ViewModelProvider
 import com.pupr.kalsel.riverop.MainActivity
 import com.pupr.kalsel.riverop.databinding.ActivityLoginBinding
 import com.pupr.kalsel.riverop.ui.dashboard.DashboardActivity
+import com.pupr.kalsel.riverop.utils.PrefsHelper
+
+private const val SESSION_DURATION_MS = 30L * 24 * 60 * 60 * 1000
 
 class LoginActivity : AppCompatActivity() {
 
@@ -18,12 +21,19 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val sharedPrefs = getSharedPreferences("river_op_prefs", Context.MODE_PRIVATE)
+        val sharedPrefs = PrefsHelper.get(this)
         val authToken = sharedPrefs.getString("auth_token", null)
         if (!authToken.isNullOrEmpty()) {
-            startActivity(Intent(this, DashboardActivity::class.java))
-            finish()
-            return
+            val loginTimestamp = sharedPrefs.getLong("login_timestamp", 0L)
+            val isExpired = loginTimestamp > 0L &&
+                System.currentTimeMillis() - loginTimestamp > SESSION_DURATION_MS
+            if (isExpired) {
+                sharedPrefs.edit().clear().apply()
+            } else {
+                startActivity(Intent(this, DashboardActivity::class.java))
+                finish()
+                return
+            }
         }
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)

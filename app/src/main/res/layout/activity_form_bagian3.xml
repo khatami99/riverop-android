@@ -73,6 +73,45 @@
 
     </LinearLayout>
 
+    <!-- Input nama/label bangunan -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardNamaBangunan"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="8dp"
+        android:layout_marginTop="8dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="1dp"
+        app:layout_constraintTop_toBottomOf="@id/layoutProgress">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nama / Label Bangunan *"
+                android:textSize="12sp"
+                android:textColor="#666666" />
+
+            <EditText
+                android:id="@+id/etNamaBangunan"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textCapSentences"
+                android:maxLines="1"
+                android:imeOptions="actionDone"
+                android:background="@null"
+                android:paddingTop="4dp"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
     <!-- RecyclerView — id disesuaikan ke rvItemInspeksi -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvItemInspeksi"
@@ -81,7 +120,7 @@
         android:clipToPadding="false"
         android:paddingBottom="80dp"
         android:padding="8dp"
-        app:layout_constraintTop_toBottomOf="@id/layoutProgress"
+        app:layout_constraintTop_toBottomOf="@id/cardNamaBangunan"
         app:layout_constraintBottom_toTopOf="@id/cardBottom" />
 
     <!-- Bottom Card — tombol disesuaikan ke yang AI Studio generate -->

@@ -19,8 +19,11 @@ interface LaporanOpDao {
     @Query("SELECT * FROM laporan_op WHERE uuid = :uuid")
     suspend fun getLaporanByUuid(uuid: String): LaporanOpEntity?
 
-    @Query("SELECT * FROM laporan_op ORDER BY dibuat_di_hp DESC")
-    fun getAllLaporanFlow(): Flow<List<LaporanOpEntity>>
+    @Query("SELECT * FROM laporan_op WHERE sync_status != 'SYNCED' ORDER BY dibuat_di_hp DESC")
+    fun getAllNonSyncedFlow(): Flow<List<LaporanOpEntity>>
+
+    @Query("SELECT * FROM laporan_op WHERE sync_status = 'SYNCED' ORDER BY dibuat_di_hp DESC LIMIT :limit")
+    fun getRecentSyncedFlow(limit: Int): Flow<List<LaporanOpEntity>>
 
     @Query("SELECT * FROM laporan_op WHERE sync_status IN ('LOCAL', 'FAILED')")
     suspend fun getUnsyncedLaporan(): List<LaporanOpEntity>

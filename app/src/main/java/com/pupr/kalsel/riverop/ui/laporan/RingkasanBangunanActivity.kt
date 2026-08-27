@@ -16,6 +16,7 @@ import com.pupr.kalsel.riverop.data.local.entity.ItemInspeksiEntity
 import com.pupr.kalsel.riverop.data.remote.MasterSyncResponse
 import com.pupr.kalsel.riverop.data.repository.LaporanRepository
 import com.pupr.kalsel.riverop.databinding.ActivityRingkasanBangunanBinding
+import com.pupr.kalsel.riverop.utils.PrefsHelper
 import com.pupr.kalsel.riverop.databinding.ItemRingkasanBangunanBinding
 import com.pupr.kalsel.riverop.models.SyncStatus
 import com.pupr.kalsel.riverop.ui.dashboard.DashboardActivity
@@ -111,7 +112,7 @@ class RingkasanBangunanActivity : AppCompatActivity() {
             binding.tvInfoUmum.text = "${laporan.tanggal_inspeksi} · Cuaca: ${laporan.cuaca?.replaceFirstChar { it.uppercase() } ?: "-"} · Debit: ${laporan.debit_air?.replaceFirstChar { it.uppercase() } ?: "-"}"
 
             val items = repository.getItemInspeksiByLaporan(uuid)
-            val masterJson = getSharedPreferences("river_op_prefs", Context.MODE_PRIVATE).getString("master_data", null)
+            val masterJson = PrefsHelper.get(this@RingkasanBangunanActivity).getString("master_data", null)
 
             binding.rvBangunan.layoutManager = LinearLayoutManager(this@RingkasanBangunanActivity)
             binding.rvBangunan.adapter = BangunanAdapter(items, masterJson) { item, index ->
@@ -164,6 +165,12 @@ class RingkasanBangunanActivity : AppCompatActivity() {
             val (nama, kode) = getNamaAndKode(item.jenis_bangunan_id)
             holder.binding.tvNamaBangunan.text = nama
             holder.binding.tvKodeBangunan.text = kode ?: ""
+            if (!item.nama_bangunan.isNullOrBlank()) {
+                holder.binding.tvNamaLabel.visibility = android.view.View.VISIBLE
+                holder.binding.tvNamaLabel.text = item.nama_bangunan
+            } else {
+                holder.binding.tvNamaLabel.visibility = android.view.View.GONE
+            }
             holder.binding.btnEditBangunan.setOnClickListener { onEdit(item, position) }
         }
 

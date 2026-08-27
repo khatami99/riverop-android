@@ -3,12 +3,12 @@ package com.pupr.kalsel.riverop.ui.dashboard
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.pupr.kalsel.riverop.R
 import com.pupr.kalsel.riverop.data.local.entity.LaporanOpEntity
 import com.pupr.kalsel.riverop.databinding.ItemLaporanBinding
 import com.pupr.kalsel.riverop.models.SyncStatus
-import java.text.SimpleDateFormat
 import java.util.Locale
 
 class LaporanAdapter(
@@ -18,8 +18,16 @@ class LaporanAdapter(
     private var listLaporan = emptyList<LaporanOpEntity>()
 
     fun setLaporan(newList: List<LaporanOpEntity>) {
+        val diff = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
+            override fun getOldListSize() = listLaporan.size
+            override fun getNewListSize() = newList.size
+            override fun areItemsTheSame(oldPos: Int, newPos: Int) =
+                listLaporan[oldPos].uuid == newList[newPos].uuid
+            override fun areContentsTheSame(oldPos: Int, newPos: Int) =
+                listLaporan[oldPos] == newList[newPos]
+        })
         listLaporan = newList
-        notifyDataSetChanged()
+        diff.dispatchUpdatesTo(this)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LaporanViewHolder {
@@ -52,7 +60,7 @@ class LaporanAdapter(
                 SyncStatus.FAILED -> R.color.status_failed
             }
 
-            binding.tvStatusBadge.text = laporan.sync_status.name
+            binding.tvStatusBadge.text = laporan.sync_status.label
             binding.cvStatus.setCardBackgroundColor(ContextCompat.getColor(binding.root.context, colorRes))
 
             binding.root.setOnClickListener {

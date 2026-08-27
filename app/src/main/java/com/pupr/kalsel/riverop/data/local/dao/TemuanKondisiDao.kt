@@ -14,6 +14,9 @@ interface TemuanKondisiDao {
     @Query("SELECT * FROM temuan_kondisi WHERE item_inspeksi_uuid = :itemUuid")
     suspend fun getTemuansByItemUuid(itemUuid: String): List<TemuanKondisiEntity>
 
+    @Query("SELECT * FROM temuan_kondisi WHERE item_inspeksi_uuid IN (SELECT uuid FROM item_inspeksi WHERE laporan_op_uuid = :laporanUuid)")
+    suspend fun getTemuansByLaporanUuid(laporanUuid: String): List<TemuanKondisiEntity>
+
     @Update
     suspend fun updateTemuan(temuan: TemuanKondisiEntity)
 

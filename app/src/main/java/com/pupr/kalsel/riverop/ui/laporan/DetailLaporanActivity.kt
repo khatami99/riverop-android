@@ -1,9 +1,10 @@
 package com.pupr.kalsel.riverop.ui.laporan
 
 import android.app.Dialog
-import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import androidx.core.content.ContextCompat
+import com.pupr.kalsel.riverop.R
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -30,7 +31,10 @@ import com.pupr.kalsel.riverop.databinding.ItemBangunanHeaderBinding
 import com.pupr.kalsel.riverop.databinding.ItemTemuanKondisiBinding
 import com.pupr.kalsel.riverop.models.SyncStatus
 import com.pupr.kalsel.riverop.ui.dashboard.DashboardActivity
+import com.pupr.kalsel.riverop.utils.PrefsHelper
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 private fun loadPhotoInto(imageView: android.widget.ImageView, path: String, centerCrop: Boolean = false) {
@@ -78,6 +82,14 @@ class DetailLaporanActivity : AppCompatActivity() {
     private fun loadData() {
         val uuid = laporanUuid ?: return
         lifecycleScope.launch {
+            // Read and parse master data once on IO thread (P1 + P5)
+            val masterData = withContext(Dispatchers.IO) {
+                val json = PrefsHelper.get(this@DetailLaporanActivity).getString("master_data", null)
+                json?.let {
+                    try { Gson().fromJson(it, MasterSyncResponse::class.java) } catch (e: Exception) { null }
+                }
+            }
+
             val laporan = repository.getLaporanByUuid(uuid)
             if (laporan == null) {
                 Toast.makeText(this@DetailLaporanActivity, "Gagal memuat detail laporan", Toast.LENGTH_SHORT).show()
@@ -90,12 +102,12 @@ class DetailLaporanActivity : AppCompatActivity() {
             val items = repository.getItemInspeksiByLaporan(uuid)
             val listItems = mutableListOf<DetailListItem>()
             items.forEachIndexed { index, item ->
-                val (nama, kode) = getJenisBangunanNameAndKode(item.jenis_bangunan_id)
-                listItems.add(DetailListItem.BangunanHeader("Bangunan ${index + 1} — $nama", kode))
+                val (nama, kode) = getJenisBangunanNameAndKode(item.jenis_bangunan_id, masterData)
+                listItems.add(DetailListItem.BangunanHeader("Bangunan ${index + 1} — $nama", kode, item.nama_bangunan))
                 val temuans = repository.getTemuanByItemUuid(item.uuid)
                 temuans.forEach { listItems.add(DetailListItem.Temuan(it)) }
             }
-            setupRecyclerView(listItems)
+            setupRecyclerView(listItems, masterData)
 
             setupActionButtons(laporan)
         }
@@ -122,7 +134,7 @@ class DetailLaporanActivity : AppCompatActivity() {
         binding.tvKendala.text = laporan.kendala ?: "Tidak ada kendala"
 
         val status = laporan.sync_status
-        binding.tvStatusBadge.text = status.name
+        binding.tvStatusBadge.text = status.label
 
         val colorHex = when (status) {
             SyncStatus.DRAFT -> "#9E9E9E"
@@ -162,26 +174,14 @@ class DetailLaporanActivity : AppCompatActivity() {
         }
     }
 
-    private fun getJenisBangunanNameAndKode(id: Int): Pair<String, String?> {
-        val sharedPrefs = getSharedPreferences("river_op_prefs", Context.MODE_PRIVATE)
-        val json = sharedPrefs.getString("master_data", null)
-        if (!json.isNullOrEmpty()) {
-            try {
-                val gson = Gson()
-                val wrapper = gson.fromJson(json, MasterSyncResponse::class.java)
-                val match = wrapper?.data?.jenis_bangunan?.find { it.id == id }
-                if (match != null) return match.nama to match.kode
-            } catch (e: Exception) { }
-        }
-        return "Jenis Bangunan ID: $id" to null
+    private fun getJenisBangunanNameAndKode(id: Int, masterData: MasterSyncResponse?): Pair<String, String?> {
+        val match = masterData?.data?.jenis_bangunan?.find { it.id == id }
+        return if (match != null) match.nama to match.kode else "Jenis Bangunan ID: $id" to null
     }
 
-    private fun setupRecyclerView(listItems: List<DetailListItem>) {
-        val sharedPrefs = getSharedPreferences("river_op_prefs", Context.MODE_PRIVATE)
-        val masterDataJson = sharedPrefs.getString("master_data", null)
-
+    private fun setupRecyclerView(listItems: List<DetailListItem>, masterData: MasterSyncResponse?) {
         binding.rvTemuan.layoutManager = LinearLayoutManager(this)
-        binding.rvTemuan.adapter = DetailListAdapter(listItems, masterDataJson) { path ->
+        binding.rvTemuan.adapter = DetailListAdapter(listItems, masterData) { path ->
             openPhotoPreview(path)
         }
     }
@@ -257,13 +257,13 @@ class DetailLaporanActivity : AppCompatActivity() {
     }
 
     private sealed class DetailListItem {
-        data class BangunanHeader(val judul: String, val kode: String?) : DetailListItem()
+        data class BangunanHeader(val judul: String, val kode: String?, val namaLabel: String? = null) : DetailListItem()
         data class Temuan(val data: TemuanKondisiEntity) : DetailListItem()
     }
 
     private class DetailListAdapter(
         private val items: List<DetailListItem>,
-        private val masterDataJson: String?,
+        private val masterData: MasterSyncResponse?,
         private val onPhotoClick: (String) -> Unit
     ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
@@ -296,9 +296,16 @@ class DetailLaporanActivity : AppCompatActivity() {
                 is DetailListItem.BangunanHeader -> {
                     holder as HeaderViewHolder
                     holder.binding.tvHeaderNamaBangunan.text = item.judul
-                    if (!item.kode.isNullOrBlank()) {
+                    val kodeText = buildString {
+                        if (!item.kode.isNullOrBlank()) append(item.kode)
+                        if (!item.namaLabel.isNullOrBlank()) {
+                            if (isNotEmpty()) append(" · ")
+                            append(item.namaLabel)
+                        }
+                    }
+                    if (kodeText.isNotBlank()) {
                         holder.binding.tvHeaderKodeOp.visibility = View.VISIBLE
-                        holder.binding.tvHeaderKodeOp.text = item.kode
+                        holder.binding.tvHeaderKodeOp.text = kodeText
                     } else {
                         holder.binding.tvHeaderKodeOp.visibility = View.GONE
                     }
@@ -306,15 +313,20 @@ class DetailLaporanActivity : AppCompatActivity() {
                 is DetailListItem.Temuan -> {
                     holder as TemuanViewHolder
                     val temuan = item.data
-                    holder.binding.tvNamaBagian.text = getBagianBangunanName(temuan.bagian_bangunan_id, masterDataJson)
+                    holder.binding.tvNamaBagian.text = getBagianBangunanName(temuan.bagian_bangunan_id)
 
                     holder.binding.cgKondisi.removeAllViews()
                     val conditions = temuan.kondisi_ditemukan.split(",").map { it.trim() }.filter { it.isNotBlank() }
                     for (cond in conditions) {
+                        val isNormal = cond.equals("Normal", ignoreCase = true)
                         val chip = Chip(holder.binding.root.context).apply {
                             text = cond
                             isClickable = false
                             isCheckable = false
+                            val bgRes = if (isNormal) R.color.kondisi_normal_bg else R.color.kondisi_rusak_bg
+                            val textRes = if (isNormal) R.color.kondisi_normal else R.color.kondisi_rusak
+                            setChipBackgroundColorResource(bgRes)
+                            setTextColor(ContextCompat.getColor(context, textRes))
                         }
                         holder.binding.cgKondisi.addView(chip)
                     }
@@ -326,29 +338,26 @@ class DetailLaporanActivity : AppCompatActivity() {
                         holder.binding.layoutKeterangan.visibility = View.GONE
                     }
 
-                    if (!temuan.foto.isNullOrBlank()) {
-                        holder.binding.imgFotoTemuan.visibility = View.VISIBLE
-                        loadPhotoInto(holder.binding.imgFotoTemuan, temuan.foto, centerCrop = true)
-                        holder.binding.imgFotoTemuan.setOnClickListener { onPhotoClick(temuan.foto) }
-                    } else {
-                        holder.binding.imgFotoTemuan.visibility = View.GONE
+                    fun bindFoto(imageView: android.widget.ImageView, path: String?) {
+                        if (!path.isNullOrBlank()) {
+                            imageView.visibility = View.VISIBLE
+                            loadPhotoInto(imageView, path, centerCrop = true)
+                            imageView.setOnClickListener { onPhotoClick(path) }
+                        } else {
+                            imageView.visibility = View.GONE
+                        }
                     }
+                    bindFoto(holder.binding.imgFotoTemuan, temuan.foto)
+                    bindFoto(holder.binding.imgFotoTemuan2, temuan.foto_2)
+                    bindFoto(holder.binding.imgFotoTemuan3, temuan.foto_3)
                 }
             }
         }
 
         override fun getItemCount() = items.size
 
-        private fun getBagianBangunanName(id: Int, json: String?): String {
-            if (!json.isNullOrEmpty()) {
-                try {
-                    val gson = Gson()
-                    val wrapper = gson.fromJson(json, MasterSyncResponse::class.java)
-                    val match = wrapper?.data?.bagian_bangunan?.find { it.id == id }
-                    if (match != null) return match.nama
-                } catch (e: Exception) { }
-            }
-            return "Bagian $id"
+        private fun getBagianBangunanName(id: Int): String {
+            return masterData?.data?.bagian_bangunan?.find { it.id == id }?.nama ?: "Bagian $id"
         }
     }
 }

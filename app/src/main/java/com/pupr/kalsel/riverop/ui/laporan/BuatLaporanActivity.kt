@@ -1,6 +1,5 @@
 package com.pupr.kalsel.riverop.ui.laporan
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -15,6 +14,7 @@ import com.pupr.kalsel.riverop.data.local.RiverOpDatabase
 import com.pupr.kalsel.riverop.data.repository.LaporanRepository
 import com.pupr.kalsel.riverop.databinding.ActivityBuatLaporanBinding
 import com.pupr.kalsel.riverop.utils.PhotoPickerHelper
+import com.pupr.kalsel.riverop.utils.PrefsHelper
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -220,7 +220,7 @@ class BuatLaporanActivity : AppCompatActivity() {
             return
         }
 
-        val sharedPrefs = getSharedPreferences("river_op_prefs", Context.MODE_PRIVATE)
+        val sharedPrefs = PrefsHelper.get(this)
         val juruSungaiId = try {
             sharedPrefs.getInt("juru_sungai_id", 0)
         } catch (e: ClassCastException) {

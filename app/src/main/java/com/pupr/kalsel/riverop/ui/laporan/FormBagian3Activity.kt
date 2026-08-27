@@ -7,10 +7,13 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -29,6 +32,7 @@ import com.pupr.kalsel.riverop.databinding.ItemInspeksiBagian3Binding
 import com.pupr.kalsel.riverop.models.SyncStatus
 import com.pupr.kalsel.riverop.ui.dashboard.DashboardActivity
 import com.pupr.kalsel.riverop.utils.PhotoPickerHelper
+import com.pupr.kalsel.riverop.utils.PrefsHelper
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.UUID
@@ -67,6 +71,15 @@ class FormBagian3Activity : AppCompatActivity() {
         existingItemUuid = intent.getStringExtra("EXTRA_EXISTING_ITEM_UUID")
         isEditItemMode = !existingItemUuid.isNullOrBlank()
 
+        setNamaBangunanHint()
+
+        binding.etNamaBangunan.setOnEditorActionListener { _, _, _ ->
+            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(binding.etNamaBangunan.windowToken, 0)
+            binding.etNamaBangunan.clearFocus()
+            true
+        }
+
         if (isEditItemMode) {
             prefillFromExistingItem()
         } else {
@@ -80,6 +93,11 @@ class FormBagian3Activity : AppCompatActivity() {
         })
 
         binding.btnSimpanDraft3.setOnClickListener {
+            if (binding.etNamaBangunan.text.toString().isBlank()) {
+                Toast.makeText(this, "Nama bangunan wajib diisi", Toast.LENGTH_SHORT).show()
+                binding.etNamaBangunan.requestFocus()
+                return@setOnClickListener
+            }
             saveBangunanAndAction(targetStatus = SyncStatus.DRAFT, addMore = false)
         }
 
@@ -96,9 +114,26 @@ class FormBagian3Activity : AppCompatActivity() {
         }
     }
 
+    private fun setNamaBangunanHint() {
+        val contoh = when (kodeOp) {
+            "OP-01.a" -> "Palung STA 12+500"
+            "OP-01.b" -> "Tanggul KM 12"
+            "OP-01.c" -> "Tanggul KM 5"
+            "OP-01.d" -> "Turap STA 3+200"
+            "OP-01.e" -> "Krib KM 9"
+            "OP-01.f" -> "Pelimpah STA 7+500"
+            "OP-01.g" -> "Bangunan Pembagi STA 4+000"
+            "OP-01.h" -> "Bendung Karet STA 10+000"
+            else -> "Bangunan KM 5"
+        }
+        binding.etNamaBangunan.hint = "Contoh: $contoh"
+    }
+
     private fun prefillFromExistingItem() {
         val itemUuid = existingItemUuid ?: return
         lifecycleScope.launch {
+            val existingItem = repository.getItemByUuid(itemUuid)
+            existingItem?.nama_bangunan?.let { binding.etNamaBangunan.setText(it) }
             val temuans = repository.getTemuanByItemUuid(itemUuid)
             val temuanMap = temuans.associate { it.bagian_bangunan_id to it }
             setupRecyclerView(temuanMap)
@@ -140,7 +175,7 @@ class FormBagian3Activity : AppCompatActivity() {
     }
 
     private fun loadBagianBangunanForJenis(jenisBangunanId: Int): List<BagianBangunanModel> {
-        val sharedPrefs = getSharedPreferences("river_op_prefs", Context.MODE_PRIVATE)
+        val sharedPrefs = PrefsHelper.get(this)
         val json = sharedPrefs.getString("master_data", null)
         if (json.isNullOrEmpty()) return emptyList()
         return try {
@@ -205,6 +240,11 @@ class FormBagian3Activity : AppCompatActivity() {
     }
 
     private fun validateInputs(): Boolean {
+        if (binding.etNamaBangunan.text.toString().isBlank()) {
+            Toast.makeText(this, "Nama bangunan wajib diisi", Toast.LENGTH_SHORT).show()
+            binding.etNamaBangunan.requestFocus()
+            return false
+        }
         for (item in itemList) {
             if (item.foto1 == null) {
                 Toast.makeText(this, "Bagian \"${item.namaBagian}\" wajib punya minimal 1 foto.", Toast.LENGTH_LONG).show()
@@ -226,6 +266,8 @@ class FormBagian3Activity : AppCompatActivity() {
         val kendala = intent.getStringExtra("EXTRA_KENDALA") ?: ""
         val foto1 = intent.getStringExtra("EXTRA_FOTO_1")
         val foto2 = intent.getStringExtra("EXTRA_FOTO_2")
+
+        val namaBangunan = binding.etNamaBangunan.text.toString().trim().ifEmpty { null }
 
         lifecycleScope.launch {
             try {
@@ -277,6 +319,7 @@ class FormBagian3Activity : AppCompatActivity() {
                         foto_2 = null,
                         foto_3 = null
                     )).copy(
+                        nama_bangunan = namaBangunan,
                         foto_1 = itemList.firstOrNull()?.foto1,
                         foto_2 = itemList.firstOrNull()?.foto2,
                         foto_3 = itemList.firstOrNull()?.foto3
@@ -302,7 +345,7 @@ class FormBagian3Activity : AppCompatActivity() {
                         uuid = itemUuid,
                         laporan_op_uuid = laporanUuid,
                         jenis_bangunan_id = jenisBangunanId,
-                        nama_bangunan = null,
+                        nama_bangunan = namaBangunan,
                         lokasi_km_dari = null,
                         lokasi_km_sampai = null,
                         koordinat_lat = null,
@@ -390,10 +433,14 @@ class InspectionAdapter(
             if (item.kondisi == "Normal") binding.rbNormal.isChecked = true
             else binding.rbBermasalah.isChecked = true
 
+            updateKondisiStyle(item.kondisi == "Normal")
+
             binding.etTindakan.setText(item.tindakan)
 
             binding.rgKondisi.setOnCheckedChangeListener { _, checkedId ->
-                item.kondisi = if (checkedId == R.id.rbNormal) "Normal" else "Rusak / Bermasalah"
+                val isNormal = checkedId == R.id.rbNormal
+                item.kondisi = if (isNormal) "Normal" else "Rusak / Bermasalah"
+                updateKondisiStyle(isNormal)
             }
 
             binding.layoutFotoSeksi.visibility = android.view.View.VISIBLE
@@ -426,6 +473,16 @@ class InspectionAdapter(
             binding.btnHapusItemFoto1.setOnClickListener { item.foto1 = null; notifyItemChanged(position) }
             binding.btnHapusItemFoto2.setOnClickListener { item.foto2 = null; notifyItemChanged(position) }
             binding.btnHapusItemFoto3.setOnClickListener { item.foto3 = null; notifyItemChanged(position) }
+        }
+
+        private fun updateKondisiStyle(isNormal: Boolean) {
+            val ctx = binding.root.context
+            val bgColor = ContextCompat.getColor(ctx, if (isNormal) R.color.kondisi_normal_bg else R.color.kondisi_rusak_bg)
+            val normalTextColor = ContextCompat.getColor(ctx, if (isNormal) R.color.kondisi_normal else R.color.text_secondary)
+            val rusakTextColor = ContextCompat.getColor(ctx, if (!isNormal) R.color.kondisi_rusak else R.color.text_secondary)
+            (binding.root as CardView).setCardBackgroundColor(bgColor)
+            binding.rbNormal.setTextColor(normalTextColor)
+            binding.rbBermasalah.setTextColor(rusakTextColor)
         }
     }
 }

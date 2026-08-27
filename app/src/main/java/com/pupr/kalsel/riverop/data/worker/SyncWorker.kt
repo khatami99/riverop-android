@@ -11,10 +11,12 @@ import com.pupr.kalsel.riverop.data.remote.LaporanSyncRequest
 import com.pupr.kalsel.riverop.data.remote.RetrofitClient
 import com.pupr.kalsel.riverop.data.repository.LaporanRepository
 import com.pupr.kalsel.riverop.models.SyncStatus
+import com.pupr.kalsel.riverop.utils.PrefsHelper
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
+import java.io.IOException
 
 class SyncWorker(
     context: Context,
@@ -22,7 +24,7 @@ class SyncWorker(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        val prefs = applicationContext.getSharedPreferences("river_op_prefs", Context.MODE_PRIVATE)
+        val prefs = PrefsHelper.get(applicationContext)
         val token = prefs.getString("auth_token", null)
 
         if (token.isNullOrEmpty()) return Result.failure()
@@ -38,6 +40,8 @@ class SyncWorker(
 
             for (laporan in pending) {
                 try {
+                    repo.updateSyncStatus(laporan.uuid, SyncStatus.SYNCING)
+
                     val foto1Url = uploadFotoIfLocal(laporan.foto_lokasi_1, token)
                     val foto2Url = uploadFotoIfLocal(laporan.foto_lokasi_2, token)
 
@@ -53,6 +57,7 @@ class SyncWorker(
                     }
 
                     val itemInspeksi = repo.getItemInspeksiByLaporan(laporan.uuid)
+                    val temuanLocalPaths = mutableListOf<String>()
                     val updatedItems = itemInspeksi.map { item ->
                         val f1 = uploadFotoIfLocal(item.foto_1, token)
                         val f2 = uploadFotoIfLocal(item.foto_2, token)
@@ -71,6 +76,9 @@ class SyncWorker(
 
                         val temuanItem = repo.getTemuanByItemUuid(item.uuid)
                         for (t in temuanItem) {
+                            listOfNotNull(t.foto, t.foto_2, t.foto_3)
+                                .filter { !it.startsWith("http") }
+                                .forEach { temuanLocalPaths.add(it) }
                             val tf1 = uploadFotoIfLocal(t.foto, token)
                             val tf2 = uploadFotoIfLocal(t.foto_2, token)
                             val tf3 = uploadFotoIfLocal(t.foto_3, token)
@@ -93,15 +101,18 @@ class SyncWorker(
                         laporan = listOf(laporanToSync.toUploadModel(updatedItems, temuan))
                     )
 
-                    val response = RetrofitClient.getApiService().syncLaporan("Bearer $token", payload)
+                    val response = RetrofitClient.getApiService().syncLaporan(token, payload)
 
-                    if (response.isSuccessful) {
-                        repo.updateSyncStatus(laporan.uuid, SyncStatus.SYNCED)
-                        deleteLocalPhotos(laporan, itemInspeksi, repo)
-                        repo.deleteLaporan(laporan.uuid)
-                    } else {
-                        repo.updateSyncStatus(laporan.uuid, SyncStatus.FAILED)
-                        hasFailure = true
+                    when {
+                        response.code() == 401 -> return Result.failure()
+                        response.isSuccessful -> {
+                            repo.updateSyncStatus(laporan.uuid, SyncStatus.SYNCED)
+                            deleteLocalPhotos(laporan, itemInspeksi, temuanLocalPaths)
+                        }
+                        else -> {
+                            repo.updateSyncStatus(laporan.uuid, SyncStatus.FAILED)
+                            hasFailure = true
+                        }
                     }
 
                 } catch (e: Exception) {
@@ -126,20 +137,20 @@ class SyncWorker(
         val file = File(path)
         if (!file.exists()) return null
 
-        return try {
-            val requestFile = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
-            val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
-            val response = RetrofitClient.getApiService().uploadFoto("Bearer $token", body)
-            if (response.isSuccessful) response.body()?.url else null
-        } catch (e: Exception) {
-            null
+        val requestFile = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
+        val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
+        val response = RetrofitClient.getApiService().uploadFoto(token, body)
+        return if (response.isSuccessful) {
+            response.body()?.url
+        } else {
+            throw IOException("Gagal upload foto (${response.code()})")
         }
     }
 
     private fun deleteLocalPhotos(
         laporan: LaporanOpEntity,
         items: List<ItemInspeksiEntity>,
-        repo: LaporanRepository
+        temuanPaths: List<String>
     ) {
         listOfNotNull(laporan.foto_lokasi_1, laporan.foto_lokasi_2).forEach {
             if (!it.startsWith("http")) File(it).delete()
@@ -149,5 +160,6 @@ class SyncWorker(
                 if (!it.startsWith("http")) File(it).delete()
             }
         }
+        temuanPaths.forEach { File(it).delete() }
     }
 }

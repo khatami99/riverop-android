@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.net.Uri
 import androidx.core.content.FileProvider
+import androidx.exifinterface.media.ExifInterface
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -49,12 +50,20 @@ class PhotoPickerHelper(private val context: Context) {
                 BitmapFactory.decodeStream(it, null, decodeOptions)
             } ?: return null
 
+            val rotation = getExifRotation(sourceUri)
+            val matrix = Matrix()
+            if (rotation != 0) matrix.postRotate(rotation.toFloat())
             val width = bitmap.width
             val height = bitmap.height
-            if (width > maxDimension || height > maxDimension) {
+            val needsScale = width > maxDimension || height > maxDimension
+            if (needsScale) {
                 val scale = maxDimension.toFloat() / maxOf(width, height)
-                val matrix = Matrix().apply { postScale(scale, scale) }
-                bitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true)
+                matrix.postScale(scale, scale)
+            }
+            if (rotation != 0 || needsScale) {
+                val original = bitmap
+                bitmap = Bitmap.createBitmap(original, 0, 0, width, height, matrix, true)
+                original.recycle()
             }
 
             var quality = 90
@@ -69,9 +78,26 @@ class PhotoPickerHelper(private val context: Context) {
                 outputStream.close()
             }
 
+            bitmap.recycle()
             targetFile.absolutePath
         } catch (e: Exception) {
             null
+        }
+    }
+
+    private fun getExifRotation(uri: Uri): Int {
+        return try {
+            context.contentResolver.openInputStream(uri)?.use { stream ->
+                val exif = ExifInterface(stream)
+                when (exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)) {
+                    ExifInterface.ORIENTATION_ROTATE_90 -> 90
+                    ExifInterface.ORIENTATION_ROTATE_180 -> 180
+                    ExifInterface.ORIENTATION_ROTATE_270 -> 270
+                    else -> 0
+                }
+            } ?: 0
+        } catch (e: Exception) {
+            0
         }
     }
 }

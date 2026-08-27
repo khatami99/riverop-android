@@ -1,6 +1,5 @@
 package com.pupr.kalsel.riverop.ui.dashboard
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -17,8 +16,14 @@ import com.pupr.kalsel.riverop.models.SyncStatus
 import com.pupr.kalsel.riverop.ui.laporan.BuatLaporanActivity
 import com.pupr.kalsel.riverop.ui.login.LoginActivity
 import com.pupr.kalsel.riverop.ui.laporan.DetailLaporanActivity
+import com.pupr.kalsel.riverop.utils.PrefsHelper
+import com.pupr.kalsel.riverop.utils.SessionManager
+import com.google.gson.Gson
+import com.pupr.kalsel.riverop.data.remote.RetrofitClient
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
+
+private const val SESSION_DURATION_MS = 30L * 24 * 60 * 60 * 1000
 
 class DashboardActivity : AppCompatActivity() {
 
@@ -31,7 +36,7 @@ class DashboardActivity : AppCompatActivity() {
         binding = ActivityDashboardBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val sharedPrefs = getSharedPreferences("river_op_prefs", Context.MODE_PRIVATE)
+        val sharedPrefs = PrefsHelper.get(this)
         binding.tvJuruNama.text = sharedPrefs.getString("juru_sungai_nama", "-")
         binding.tvWilayahSungai.text = "Wilayah Sungai: ${sharedPrefs.getString("nama_wilayah_sungai", "-")}"
 
@@ -51,6 +56,29 @@ class DashboardActivity : AppCompatActivity() {
         scheduleSyncWorker()
         setupSyncManual()
         observeManualSyncStatus()
+        refreshMasterData()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (isSessionExpired()) {
+            performLogout()
+            return
+        }
+        val sharedPrefs = PrefsHelper.get(this)
+        binding.tvWilayahSungai.text = "Wilayah Sungai: ${sharedPrefs.getString("nama_wilayah_sungai", "-")}"
+        SessionManager.onUnauthorized = { performLogout() }
+    }
+
+    private fun isSessionExpired(): Boolean {
+        val loginTimestamp = PrefsHelper.get(this).getLong("login_timestamp", 0L)
+        if (loginTimestamp == 0L) return false
+        return System.currentTimeMillis() - loginTimestamp > SESSION_DURATION_MS
+    }
+
+    override fun onPause() {
+        super.onPause()
+        SessionManager.onUnauthorized = null
     }
 
     private fun setupRecyclerView() {
@@ -156,11 +184,35 @@ class DashboardActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun performLogout() {
-        val customPrefs = getSharedPreferences("river_op_prefs", Context.MODE_PRIVATE)
-        customPrefs.edit().clear().apply()
+    private fun refreshMasterData() {
+        lifecycleScope.launch {
+            try {
+                val prefs = PrefsHelper.get(this@DashboardActivity)
+                val token = prefs.getString("auth_token", null) ?: return@launch
+                val wilayahSungaiId = prefs.getInt("wilayah_sungai_id", 0)
 
-        val defaultPrefs = getSharedPreferences("${packageName}_preferences", Context.MODE_PRIVATE)
+                val response = RetrofitClient.getApiService().syncMaster(token)
+                if (response.isSuccessful) {
+                    val body = response.body() ?: return@launch
+                    val jsonString = Gson().toJson(body)
+                    val namaWilayah = body.data.wilayah_sungai.find { it.id == wilayahSungaiId }?.nama_sungai ?: "-"
+                    prefs.edit().apply {
+                        putString("master_data", jsonString)
+                        putString("nama_wilayah_sungai", namaWilayah)
+                        apply()
+                    }
+                    binding.tvWilayahSungai.text = "Wilayah Sungai: $namaWilayah"
+                }
+            } catch (e: Exception) {
+                // Gagal refresh master data tidak mengganggu penggunaan app
+            }
+        }
+    }
+
+    private fun performLogout() {
+        PrefsHelper.get(this).edit().clear().apply()
+
+        val defaultPrefs = getSharedPreferences("${packageName}_preferences", MODE_PRIVATE)
         defaultPrefs.edit().clear().apply()
 
         val workManager = WorkManager.getInstance(applicationContext)
@@ -171,11 +223,5 @@ class DashboardActivity : AppCompatActivity() {
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
         finish()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        val sharedPrefs = getSharedPreferences("river_op_prefs", Context.MODE_PRIVATE)
-        binding.tvWilayahSungai.text = "Wilayah Sungai: ${sharedPrefs.getString("nama_wilayah_sungai", "-")}"
     }
 }

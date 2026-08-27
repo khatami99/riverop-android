@@ -23,7 +23,7 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -79,4 +79,10 @@ dependencies {
 
     //PhotoView
     implementation("io.getstream:photoview:1.0.0")
+
+    // ExifInterface untuk baca orientasi foto
+    implementation("androidx.exifinterface:exifinterface:1.3.7")
+
+    // EncryptedSharedPreferences
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
 }

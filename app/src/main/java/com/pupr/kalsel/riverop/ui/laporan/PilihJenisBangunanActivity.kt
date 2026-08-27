@@ -11,6 +11,7 @@ import com.google.gson.Gson
 import com.pupr.kalsel.riverop.data.local.RiverOpDatabase
 import com.pupr.kalsel.riverop.data.repository.LaporanRepository
 import com.pupr.kalsel.riverop.databinding.ActivityPilihJenisBangunanBinding
+import com.pupr.kalsel.riverop.utils.PrefsHelper
 
 class PilihJenisBangunanActivity : AppCompatActivity() {
 
@@ -89,7 +90,7 @@ class PilihJenisBangunanActivity : AppCompatActivity() {
     }
 
     private fun loadJenisBangunan(): List<JenisBangunanModel> {
-        val sharedPrefs = getSharedPreferences("river_op_prefs", Context.MODE_PRIVATE)
+        val sharedPrefs = PrefsHelper.get(this)
         val json = sharedPrefs.getString("master_data", null)
         if (!json.isNullOrEmpty()) {
             try {

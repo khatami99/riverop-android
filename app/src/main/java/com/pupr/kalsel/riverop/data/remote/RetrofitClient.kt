@@ -1,5 +1,6 @@
 package com.pupr.kalsel.riverop.data.remote
 
+import com.pupr.kalsel.riverop.utils.SessionManager
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -42,6 +43,13 @@ object RetrofitClient {
                 .connectTimeout(30, TimeUnit.SECONDS)
                 .readTimeout(30, TimeUnit.SECONDS)
                 .writeTimeout(30, TimeUnit.SECONDS)
+                .addInterceptor { chain ->
+                    val response = chain.proceed(chain.request())
+                    if (response.code == 401) {
+                        SessionManager.notifyUnauthorized()
+                    }
+                    response
+                }
                 .build()
 
             retrofit = Retrofit.Builder()

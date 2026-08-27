@@ -7,6 +7,7 @@ import com.pupr.kalsel.riverop.data.local.entity.ItemInspeksiEntity
 import com.pupr.kalsel.riverop.data.local.entity.TemuanKondisiEntity
 import com.pupr.kalsel.riverop.models.SyncStatus
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 
 class LaporanRepository(private val database: RiverOpDatabase) {
 
@@ -56,7 +57,12 @@ class LaporanRepository(private val database: RiverOpDatabase) {
     }
 
     fun getAllLaporan(): Flow<List<LaporanOpEntity>> {
-        return laporanOpDao.getAllLaporanFlow()
+        return combine(
+            laporanOpDao.getAllNonSyncedFlow(),
+            laporanOpDao.getRecentSyncedFlow(50)
+        ) { nonSynced, recentSynced ->
+            (nonSynced + recentSynced).sortedByDescending { it.dibuat_di_hp }
+        }
     }
 
     suspend fun getUnsyncedLaporan(): List<LaporanOpEntity> {
@@ -105,11 +111,6 @@ class LaporanRepository(private val database: RiverOpDatabase) {
     }
 
     suspend fun getTemuanByLaporan(laporanUuid: String): List<TemuanKondisiEntity> {
-        val items = itemInspeksiDao.getItemsByLaporanUuid(laporanUuid)
-        val semua = mutableListOf<TemuanKondisiEntity>()
-        for (item in items) {
-            semua.addAll(temuanKondisiDao.getTemuansByItemUuid(item.uuid))
-        }
-        return semua
+        return temuanKondisiDao.getTemuansByLaporanUuid(laporanUuid)
     }
 }
