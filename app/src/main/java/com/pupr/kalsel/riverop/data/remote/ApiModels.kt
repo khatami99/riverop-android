@@ -15,7 +15,8 @@ data class JuruSungaiModel(
     val id: Int,
     val nama: String,
     val username: String,
-    val wilayah_sungai_id: Int
+    val das_id: Int,
+    val nama_das: String?
 )
 
 data class LogoutResponse(
@@ -27,7 +28,7 @@ data class ProfilResponse(
     val nama: String,
     val username: String,
     val nip: String?,
-    val nama_wilayah_sungai: String?
+    val nama_das: String?
 )
 
 data class MasterSyncResponse(
@@ -39,6 +40,7 @@ data class MasterSyncResponse(
 data class MasterData(
     val kabupaten: List<KabupatenModel>,
     val wilayah_sungai: List<WilayahSungaiModel>,
+    val das: List<DasModel>,
     val jenis_bangunan: List<JenisBangunanModel>,
     val bagian_bangunan: List<BagianBangunanModel>,
     val pilihan_kondisi: List<PilihanKondisiModel>
@@ -56,6 +58,19 @@ data class WilayahSungaiModel(
     val kabupaten_id: Int,
     val nama_sungai: String,
     val kode_sungai: String,
+    val aktif: Boolean
+)
+
+/**
+ * Daerah Aliran Sungai — satuan wilayah kerja juru sungai.
+ * Wewenang provinsi hanya mencakup satu wilayah sungai, sehingga pembagian
+ * tugas juru dilakukan per DAS di bawahnya.
+ */
+data class DasModel(
+    val id: Int,
+    val wilayah_sungai_id: Int,
+    val nama_das: String,
+    val kode_das: String,
     val aktif: Boolean
 )
 
@@ -91,7 +106,7 @@ data class LaporanSyncRequest(
 data class LaporanUploadModel(
     val uuid: String,
     val juru_sungai_id: Int,
-    val wilayah_sungai_id: Int,
+    val das_id: Int,
     val tanggal_inspeksi: String,
     val bulan: Int,
     val tahun: Int,

@@ -256,7 +256,7 @@ class FormBagian3Activity : AppCompatActivity() {
 
     private fun saveBangunanAndAction(targetStatus: SyncStatus, addMore: Boolean) {
         val juruSungaiId = intent.getIntExtra("EXTRA_JURU_SUNGAI_ID", 0)
-        val wilayahSungaiId = intent.getIntExtra("EXTRA_WILAYAH_SUNGAI_ID", 0)
+        val dasId = intent.getIntExtra("EXTRA_DAS_ID", 0)
         val tanggal = intent.getStringExtra("EXTRA_TANGGAL") ?: ""
         val bulan = intent.getIntExtra("EXTRA_BULAN", 0)
         val tahun = intent.getIntExtra("EXTRA_TAHUN", 0)
@@ -277,7 +277,7 @@ class FormBagian3Activity : AppCompatActivity() {
                         LaporanOpEntity(
                             uuid = newUuid,
                             juru_sungai_id = juruSungaiId,
-                            wilayah_sungai_id = wilayahSungaiId,
+                            das_id = dasId,
                             tanggal_inspeksi = tanggal,
                             bulan = bulan,
                             tahun = tahun,
@@ -376,7 +376,7 @@ class FormBagian3Activity : AppCompatActivity() {
                 if (addMore) {
                     startActivity(Intent(this@FormBagian3Activity, PilihJenisBangunanActivity::class.java).apply {
                         putExtra("EXTRA_JURU_SUNGAI_ID", juruSungaiId)
-                        putExtra("EXTRA_WILAYAH_SUNGAI_ID", wilayahSungaiId)
+                        putExtra("EXTRA_DAS_ID", dasId)
                         putExtra("EXTRA_TANGGAL", tanggal)
                         putExtra("EXTRA_BULAN", bulan)
                         putExtra("EXTRA_TAHUN", tahun)

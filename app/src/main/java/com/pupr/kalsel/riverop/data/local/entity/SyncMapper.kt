@@ -16,7 +16,7 @@ fun LaporanOpEntity.toUploadModel(
     return LaporanUploadModel(
         uuid = uuid,
         juru_sungai_id = juru_sungai_id,
-        wilayah_sungai_id = wilayah_sungai_id,
+        das_id = das_id,
         tanggal_inspeksi = tanggal_inspeksi,
         bulan = bulan,
         tahun = tahun,

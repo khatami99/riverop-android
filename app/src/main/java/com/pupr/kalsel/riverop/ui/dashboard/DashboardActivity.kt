@@ -38,7 +38,7 @@ class DashboardActivity : AppCompatActivity() {
 
         val sharedPrefs = PrefsHelper.get(this)
         binding.tvJuruNama.text = sharedPrefs.getString("juru_sungai_nama", "-")
-        binding.tvWilayahSungai.text = "Wilayah Sungai: ${sharedPrefs.getString("nama_wilayah_sungai", "-")}"
+        binding.tvWilayahSungai.text = "DAS: ${sharedPrefs.getString("nama_das", "-")}"
 
         binding.btnBuatLaporan.setOnClickListener {
             startActivity(Intent(this, BuatLaporanActivity::class.java))
@@ -66,7 +66,7 @@ class DashboardActivity : AppCompatActivity() {
             return
         }
         val sharedPrefs = PrefsHelper.get(this)
-        binding.tvWilayahSungai.text = "Wilayah Sungai: ${sharedPrefs.getString("nama_wilayah_sungai", "-")}"
+        binding.tvWilayahSungai.text = "DAS: ${sharedPrefs.getString("nama_das", "-")}"
         SessionManager.onUnauthorized = { performLogout() }
     }
 
@@ -189,19 +189,19 @@ class DashboardActivity : AppCompatActivity() {
             try {
                 val prefs = PrefsHelper.get(this@DashboardActivity)
                 val token = prefs.getString("auth_token", null) ?: return@launch
-                val wilayahSungaiId = prefs.getInt("wilayah_sungai_id", 0)
+                val dasId = prefs.getInt("das_id", 0)
 
                 val response = RetrofitClient.getApiService().syncMaster(token)
                 if (response.isSuccessful) {
                     val body = response.body() ?: return@launch
                     val jsonString = Gson().toJson(body)
-                    val namaWilayah = body.data.wilayah_sungai.find { it.id == wilayahSungaiId }?.nama_sungai ?: "-"
+                    val namaDas = body.data.das.find { it.id == dasId }?.nama_das ?: "-"
                     prefs.edit().apply {
                         putString("master_data", jsonString)
-                        putString("nama_wilayah_sungai", namaWilayah)
+                        putString("nama_das", namaDas)
                         apply()
                     }
-                    binding.tvWilayahSungai.text = "Wilayah Sungai: $namaWilayah"
+                    binding.tvWilayahSungai.text = "DAS: $namaDas"
                 }
             } catch (e: Exception) {
                 // Gagal refresh master data tidak mengganggu penggunaan app

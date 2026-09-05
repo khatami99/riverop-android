@@ -62,7 +62,7 @@ class RingkasanBangunanActivity : AppCompatActivity() {
                 val laporan = repository.getLaporanByUuid(uuid) ?: return@launch
                 startActivity(Intent(this@RingkasanBangunanActivity, PilihJenisBangunanActivity::class.java).apply {
                     putExtra("EXTRA_JURU_SUNGAI_ID", laporan.juru_sungai_id)
-                    putExtra("EXTRA_WILAYAH_SUNGAI_ID", laporan.wilayah_sungai_id)
+                    putExtra("EXTRA_DAS_ID", laporan.das_id)
                     putExtra("EXTRA_TANGGAL", laporan.tanggal_inspeksi)
                     putExtra("EXTRA_BULAN", laporan.bulan)
                     putExtra("EXTRA_TAHUN", laporan.tahun)
@@ -124,7 +124,7 @@ class RingkasanBangunanActivity : AppCompatActivity() {
                     putExtra("EXTRA_NOMOR_BANGUNAN", index + 1)
                     val laporan2 = laporan
                     putExtra("EXTRA_JURU_SUNGAI_ID", laporan2.juru_sungai_id)
-                    putExtra("EXTRA_WILAYAH_SUNGAI_ID", laporan2.wilayah_sungai_id)
+                    putExtra("EXTRA_DAS_ID", laporan2.das_id)
                     putExtra("EXTRA_TANGGAL", laporan2.tanggal_inspeksi)
                     putExtra("EXTRA_BULAN", laporan2.bulan)
                     putExtra("EXTRA_TAHUN", laporan2.tahun)

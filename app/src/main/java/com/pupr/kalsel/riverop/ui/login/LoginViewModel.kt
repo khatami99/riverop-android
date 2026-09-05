@@ -27,7 +27,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                     val body = response.body()
                     if (body != null) {
                         saveSession(body)
-                        syncMasterData(body.token, body.user.wilayah_sungai_id)
+                        syncMasterData(body.token, body.user.das_id)
                         _loginState.postValue(LoginState.Success(body))
                     } else {
                         _loginState.postValue(LoginState.Error("Respons kosong dari server"))
@@ -53,13 +53,14 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
             putString("auth_token", "Bearer ${response.token}")
             putInt("juru_sungai_id", response.user.id)
             putString("juru_sungai_nama", response.user.nama)
-            putInt("wilayah_sungai_id", response.user.wilayah_sungai_id)
+            putInt("das_id", response.user.das_id)
+            putString("nama_das", response.user.nama_das ?: "-")
             putLong("login_timestamp", System.currentTimeMillis())
             apply()
         }
     }
 
-    private suspend fun syncMasterData(token: String, wilayahSungaiId: Int) {
+    private suspend fun syncMasterData(token: String, dasId: Int) {
         try {
             val authHeader = "Bearer $token"
             val syncResponse = RetrofitClient.getApiService().syncMaster(authHeader)
@@ -68,11 +69,11 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                 if (syncBody != null) {
                     val gson = Gson()
                     val jsonString = gson.toJson(syncBody)
-                    val namaWilayah = syncBody.data.wilayah_sungai.find { it.id == wilayahSungaiId }?.nama_sungai ?: "-"
+                    val namaDas = syncBody.data.das.find { it.id == dasId }?.nama_das ?: "-"
 
                     PrefsHelper.get(getApplication()).edit().apply {
                         putString("master_data", jsonString)
-                        putString("nama_wilayah_sungai", namaWilayah)
+                        putString("nama_das", namaDas)
                         apply()
                     }
                 }

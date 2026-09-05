@@ -8,7 +8,7 @@ import com.pupr.kalsel.riverop.models.SyncStatus
 data class LaporanOpEntity(
     @PrimaryKey val uuid: String,
     val juru_sungai_id: Int,
-    val wilayah_sungai_id: Int,
+    val das_id: Int,
     val tanggal_inspeksi: String,
     val bulan: Int,
     val tahun: Int,

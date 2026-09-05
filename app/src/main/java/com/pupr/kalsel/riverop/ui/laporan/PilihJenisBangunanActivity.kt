@@ -29,7 +29,7 @@ class PilihJenisBangunanActivity : AppCompatActivity() {
 
         // Baca semua data dari intent
         val juruSungaiId = intent.getIntExtra("EXTRA_JURU_SUNGAI_ID", 0)
-        val wilayahSungaiId = intent.getIntExtra("EXTRA_WILAYAH_SUNGAI_ID", 0)
+        val dasId = intent.getIntExtra("EXTRA_DAS_ID", 0)
         val tanggal = intent.getStringExtra("EXTRA_TANGGAL") ?: ""
         val bulan = intent.getIntExtra("EXTRA_BULAN", 0)
         val tahun = intent.getIntExtra("EXTRA_TAHUN", 0)
@@ -64,7 +64,7 @@ class PilihJenisBangunanActivity : AppCompatActivity() {
 
             val nextIntent = Intent(this, FormBagian3Activity::class.java).apply {
                 putExtra("EXTRA_JURU_SUNGAI_ID", juruSungaiId)
-                putExtra("EXTRA_WILAYAH_SUNGAI_ID", wilayahSungaiId)
+                putExtra("EXTRA_DAS_ID", dasId)
                 putExtra("EXTRA_TANGGAL", tanggal)
                 putExtra("EXTRA_BULAN", bulan)
                 putExtra("EXTRA_TAHUN", tahun)

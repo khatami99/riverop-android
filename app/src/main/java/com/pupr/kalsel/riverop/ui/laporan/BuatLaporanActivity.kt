@@ -226,13 +226,13 @@ class BuatLaporanActivity : AppCompatActivity() {
         } catch (e: ClassCastException) {
             sharedPrefs.getString("juru_sungai_id", "0")?.toIntOrNull() ?: 0
         }
-        val wilayahSungaiId = try {
-            sharedPrefs.getInt("wilayah_sungai_id", 0)
+        val dasId = try {
+            sharedPrefs.getInt("das_id", 0)
         } catch (e: ClassCastException) {
-            sharedPrefs.getString("wilayah_sungai_id", "0")?.toIntOrNull() ?: 0
+            sharedPrefs.getString("das_id", "0")?.toIntOrNull() ?: 0
         }
 
-        if (juruSungaiId == 0 || wilayahSungaiId == 0) {
+        if (juruSungaiId == 0 || dasId == 0) {
             Toast.makeText(this, "Sesi login tidak valid", Toast.LENGTH_SHORT).show()
             return
         }
@@ -241,7 +241,7 @@ class BuatLaporanActivity : AppCompatActivity() {
 
         startActivity(Intent(this, PilihJenisBangunanActivity::class.java).apply {
             putExtra("EXTRA_JURU_SUNGAI_ID", juruSungaiId)
-            putExtra("EXTRA_WILAYAH_SUNGAI_ID", wilayahSungaiId)
+            putExtra("EXTRA_DAS_ID", dasId)
             putExtra("EXTRA_TANGGAL", tanggal)
             putExtra("EXTRA_BULAN", month)
             putExtra("EXTRA_TAHUN", year)
