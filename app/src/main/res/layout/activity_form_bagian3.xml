@@ -109,6 +109,60 @@
                 android:paddingTop="4dp"
                 android:textSize="14sp" />
 
+            <!-- Titik lokasi bangunan -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="8dp"
+                android:background="#EEEEEE" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="8dp">
+
+                <ProgressBar
+                    android:id="@+id/pbLokasi"
+                    style="?android:attr/progressBarStyleSmall"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tvIkonLokasi"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📍"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/tvStatusLokasi"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:text="Lokasi belum diambil"
+                    android:textSize="12sp"
+                    android:textColor="#666666" />
+
+                <Button
+                    android:id="@+id/btnAmbilLokasi"
+                    style="?android:attr/borderlessButtonStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="4dp"
+                    android:text="Ambil Lokasi"
+                    android:textSize="12sp"
+                    android:textAllCaps="false"
+                    android:textColor="#1B9CE6" />
+
+            </LinearLayout>
+
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 

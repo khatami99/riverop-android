@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
@@ -31,10 +32,12 @@ import com.pupr.kalsel.riverop.databinding.ActivityFormBagian3Binding
 import com.pupr.kalsel.riverop.databinding.ItemInspeksiBagian3Binding
 import com.pupr.kalsel.riverop.models.SyncStatus
 import com.pupr.kalsel.riverop.ui.dashboard.DashboardActivity
+import com.pupr.kalsel.riverop.utils.LokasiHelper
 import com.pupr.kalsel.riverop.utils.PhotoPickerHelper
 import com.pupr.kalsel.riverop.utils.PrefsHelper
 import kotlinx.coroutines.launch
 import java.io.File
+import java.util.Locale
 import java.util.UUID
 
 class FormBagian3Activity : AppCompatActivity() {
@@ -56,6 +59,20 @@ class FormBagian3Activity : AppCompatActivity() {
 
     private val itemList = mutableListOf<InspectionItemData>()
 
+    private lateinit var lokasiHelper: LokasiHelper
+    private var lokasiLat: Double? = null
+    private var lokasiLng: Double? = null
+
+    private val mintaIzinLokasi = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { hasil ->
+        if (hasil.values.any { it }) {
+            ambilLokasi()
+        } else {
+            tampilkanStatusLokasi("Izin lokasi ditolak", abu = true)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityFormBagian3Binding.inflate(layoutInflater)
@@ -72,6 +89,11 @@ class FormBagian3Activity : AppCompatActivity() {
         isEditItemMode = !existingItemUuid.isNullOrBlank()
 
         setNamaBangunanHint()
+
+        lokasiHelper = LokasiHelper(this)
+        binding.btnAmbilLokasi.setOnClickListener { mulaiAmbilLokasi() }
+        // Dicoba otomatis saat form dibuka; juru tetap bisa mengulang manual.
+        mulaiAmbilLokasi()
 
         binding.etNamaBangunan.setOnEditorActionListener { _, _, _ ->
             val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -134,6 +156,21 @@ class FormBagian3Activity : AppCompatActivity() {
         lifecycleScope.launch {
             val existingItem = repository.getItemByUuid(itemUuid)
             existingItem?.nama_bangunan?.let { binding.etNamaBangunan.setText(it) }
+
+            // Tampilkan titik yang sudah tersimpan agar juru tahu bangunan ini
+            // sudah berlokasi, tanpa harus mengambil ulang.
+            val lat = existingItem?.koordinat_lat
+            val lng = existingItem?.koordinat_lng
+            if (lat != null && lng != null && lokasiLat == null) {
+                lokasiLat = lat
+                lokasiLng = lng
+                binding.btnAmbilLokasi.text = "Ulangi"
+                tampilkanStatusLokasi(
+                    String.format(Locale.US, "%.5f, %.5f  (tersimpan)", lat, lng),
+                    abu = false
+                )
+            }
+
             val temuans = repository.getTemuanByItemUuid(itemUuid)
             val temuanMap = temuans.associate { it.bagian_bangunan_id to it }
             setupRecyclerView(temuanMap)
@@ -254,6 +291,58 @@ class FormBagian3Activity : AppCompatActivity() {
         return true
     }
 
+    /* ---------- Titik lokasi bangunan ---------- */
+
+    private fun mulaiAmbilLokasi() {
+        if (!lokasiHelper.adaIzin()) {
+            mintaIzinLokasi.launch(LokasiHelper.IZIN)
+            return
+        }
+        ambilLokasi()
+    }
+
+    private fun ambilLokasi() {
+        binding.pbLokasi.visibility = View.VISIBLE
+        binding.tvIkonLokasi.visibility = View.GONE
+        binding.btnAmbilLokasi.isEnabled = false
+        binding.tvStatusLokasi.text = "Mencari lokasi..."
+        binding.tvStatusLokasi.setTextColor(ContextCompat.getColor(this, R.color.text_secondary))
+
+        lifecycleScope.launch {
+            val hasil = lokasiHelper.ambil()
+
+            binding.pbLokasi.visibility = View.GONE
+            binding.tvIkonLokasi.visibility = View.VISIBLE
+            binding.btnAmbilLokasi.isEnabled = true
+
+            when (hasil) {
+                is LokasiHelper.Hasil.Berhasil -> {
+                    lokasiLat = hasil.lat
+                    lokasiLng = hasil.lng
+                    binding.btnAmbilLokasi.text = "Ulangi"
+                    tampilkanStatusLokasi(
+                        String.format(
+                            Locale.US,
+                            "%.5f, %.5f  ±%.0f m",
+                            hasil.lat, hasil.lng, hasil.akurasiMeter
+                        ),
+                        abu = false
+                    )
+                }
+                LokasiHelper.Hasil.IzinDitolak -> tampilkanStatusLokasi("Izin lokasi ditolak", abu = true)
+                LokasiHelper.Hasil.GpsMati -> tampilkanStatusLokasi("GPS mati, aktifkan dulu", abu = true)
+                LokasiHelper.Hasil.TidakDitemukan -> tampilkanStatusLokasi("Lokasi tidak ditemukan, coba lagi", abu = true)
+            }
+        }
+    }
+
+    private fun tampilkanStatusLokasi(pesan: String, abu: Boolean) {
+        binding.tvStatusLokasi.text = pesan
+        binding.tvStatusLokasi.setTextColor(
+            ContextCompat.getColor(this, if (abu) R.color.text_secondary else R.color.kondisi_normal)
+        )
+    }
+
     private fun saveBangunanAndAction(targetStatus: SyncStatus, addMore: Boolean) {
         val juruSungaiId = intent.getIntExtra("EXTRA_JURU_SUNGAI_ID", 0)
         val dasId = intent.getIntExtra("EXTRA_DAS_ID", 0)
@@ -318,12 +407,18 @@ class FormBagian3Activity : AppCompatActivity() {
                         foto_1 = null,
                         foto_2 = null,
                         foto_3 = null
-                    )).copy(
-                        nama_bangunan = namaBangunan,
-                        foto_1 = itemList.firstOrNull()?.foto1,
-                        foto_2 = itemList.firstOrNull()?.foto2,
-                        foto_3 = itemList.firstOrNull()?.foto3
-                    )
+                    )).let { dasar ->
+                        dasar.copy(
+                            nama_bangunan = namaBangunan,
+                            // Titik lama dipertahankan bila kali ini gagal diambil,
+                            // supaya mengubah data tidak menghapus lokasi yang sudah ada.
+                            koordinat_lat = lokasiLat ?: dasar.koordinat_lat,
+                            koordinat_lng = lokasiLng ?: dasar.koordinat_lng,
+                            foto_1 = itemList.firstOrNull()?.foto1,
+                            foto_2 = itemList.firstOrNull()?.foto2,
+                            foto_3 = itemList.firstOrNull()?.foto3
+                        )
+                    }
                     val temuans = itemList.map { item ->
                         TemuanKondisiEntity(
                             item_inspeksi_uuid = itemUuid,
@@ -348,8 +443,8 @@ class FormBagian3Activity : AppCompatActivity() {
                         nama_bangunan = namaBangunan,
                         lokasi_km_dari = null,
                         lokasi_km_sampai = null,
-                        koordinat_lat = null,
-                        koordinat_lng = null,
+                        koordinat_lat = lokasiLat,
+                        koordinat_lng = lokasiLng,
                         tipe_konstruksi = null,
                         catatan = null,
                         foto_1 = itemList.firstOrNull()?.foto1,
