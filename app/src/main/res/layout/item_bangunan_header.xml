@@ -34,6 +34,21 @@
             android:textSize="12sp"
             tools:text="OP-01.b" />
 
+        <!-- Titik lokasi bangunan; disembunyikan bila belum terekam -->
+        <TextView
+            android:id="@+id/tvHeaderKoordinat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:background="#B2EBF2"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="3dp"
+            android:textColor="#006064"
+            android:textSize="11sp"
+            android:visibility="gone"
+            tools:text="📍 -3.31438, 114.58959"
+            tools:visibility="visible" />
+
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>

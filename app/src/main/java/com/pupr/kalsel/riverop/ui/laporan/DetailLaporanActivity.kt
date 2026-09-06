@@ -103,7 +103,15 @@ class DetailLaporanActivity : AppCompatActivity() {
             val listItems = mutableListOf<DetailListItem>()
             items.forEachIndexed { index, item ->
                 val (nama, kode) = getJenisBangunanNameAndKode(item.jenis_bangunan_id, masterData)
-                listItems.add(DetailListItem.BangunanHeader("Bangunan ${index + 1} — $nama", kode, item.nama_bangunan))
+                listItems.add(
+                    DetailListItem.BangunanHeader(
+                        "Bangunan ${index + 1} — $nama",
+                        kode,
+                        item.nama_bangunan,
+                        item.koordinat_lat,
+                        item.koordinat_lng
+                    )
+                )
                 val temuans = repository.getTemuanByItemUuid(item.uuid)
                 temuans.forEach { listItems.add(DetailListItem.Temuan(it)) }
             }
@@ -257,7 +265,13 @@ class DetailLaporanActivity : AppCompatActivity() {
     }
 
     private sealed class DetailListItem {
-        data class BangunanHeader(val judul: String, val kode: String?, val namaLabel: String? = null) : DetailListItem()
+        data class BangunanHeader(
+            val judul: String,
+            val kode: String?,
+            val namaLabel: String? = null,
+            val koordinatLat: Double? = null,
+            val koordinatLng: Double? = null
+        ) : DetailListItem()
         data class Temuan(val data: TemuanKondisiEntity) : DetailListItem()
     }
 
@@ -308,6 +322,28 @@ class DetailLaporanActivity : AppCompatActivity() {
                         holder.binding.tvHeaderKodeOp.text = kodeText
                     } else {
                         holder.binding.tvHeaderKodeOp.visibility = View.GONE
+                    }
+
+                    // Titik lokasi; laporan lama dari sebelum GPS ada tidak punya
+                    // koordinat, jadi barisnya disembunyikan saja.
+                    val lat = item.koordinatLat
+                    val lng = item.koordinatLng
+                    if (lat != null && lng != null) {
+                        holder.binding.tvHeaderKoordinat.visibility = View.VISIBLE
+                        holder.binding.tvHeaderKoordinat.text =
+                            String.format(java.util.Locale.US, "📍 %.5f, %.5f", lat, lng)
+                        holder.binding.tvHeaderKoordinat.setOnClickListener { v ->
+                            val intent = Intent(
+                                Intent.ACTION_VIEW,
+                                android.net.Uri.parse("geo:$lat,$lng?q=$lat,$lng")
+                            )
+                            if (intent.resolveActivity(v.context.packageManager) != null) {
+                                v.context.startActivity(intent)
+                            }
+                        }
+                    } else {
+                        holder.binding.tvHeaderKoordinat.visibility = View.GONE
+                        holder.binding.tvHeaderKoordinat.setOnClickListener(null)
                     }
                 }
                 is DetailListItem.Temuan -> {

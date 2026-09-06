@@ -6,9 +6,12 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.graphics.Rect
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
@@ -96,9 +99,7 @@ class FormBagian3Activity : AppCompatActivity() {
         mulaiAmbilLokasi()
 
         binding.etNamaBangunan.setOnEditorActionListener { _, _, _ ->
-            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.hideSoftInputFromWindow(binding.etNamaBangunan.windowToken, 0)
-            binding.etNamaBangunan.clearFocus()
+            tutupKeyboard()
             true
         }
 
@@ -245,6 +246,11 @@ class FormBagian3Activity : AppCompatActivity() {
     }
 
     private fun showPhotoPickerDialog() {
+        // Tanpa ini, fokus tetap tertinggal di kolom nama bangunan sehingga
+        // keyboard muncul lagi begitu kembali dari kamera atau galeri, dan
+        // memakan ruang layar saat juru menggulir daftar bagian bangunan.
+        tutupKeyboard()
+
         AlertDialog.Builder(this)
             .setTitle("Pilih Sumber Foto")
             .setItems(arrayOf("Kamera", "Galeri")) { _, which ->
@@ -289,6 +295,35 @@ class FormBagian3Activity : AppCompatActivity() {
             }
         }
         return true
+    }
+
+    /* ---------- Keyboard ---------- */
+
+    private fun tutupKeyboard() {
+        currentFocus?.let { fokus ->
+            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(fokus.windowToken, 0)
+            fokus.clearFocus()
+        }
+    }
+
+    /**
+     * Menyentuh area mana pun di luar kolom teks akan menutup keyboard.
+     * Juru mengisi form ini sambil berdiri di lapangan, jadi keyboard yang
+     * bertahan terus memakan ruang gulir yang dibutuhkan.
+     */
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        if (event.action == MotionEvent.ACTION_DOWN) {
+            val fokus = currentFocus
+            if (fokus is EditText) {
+                val batas = Rect()
+                fokus.getGlobalVisibleRect(batas)
+                if (!batas.contains(event.rawX.toInt(), event.rawY.toInt())) {
+                    tutupKeyboard()
+                }
+            }
+        }
+        return super.dispatchTouchEvent(event)
     }
 
     /* ---------- Titik lokasi bangunan ---------- */
