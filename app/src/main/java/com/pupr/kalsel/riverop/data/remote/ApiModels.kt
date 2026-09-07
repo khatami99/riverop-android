@@ -123,6 +123,7 @@ data class ItemInspeksiUploadModel(
     val uuid: String,
     val jenis_bangunan_id: Int,
     val nama_bangunan: String?,
+    val nama_sungai: String?,
     val lokasi_km_dari: Double?,
     val lokasi_km_sampai: Double?,
     val koordinat_lat: Double?,

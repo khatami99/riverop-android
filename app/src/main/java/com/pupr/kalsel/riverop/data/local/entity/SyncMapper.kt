@@ -41,6 +41,7 @@ fun ItemInspeksiEntity.toUploadModel(
         uuid = uuid,
         jenis_bangunan_id = jenis_bangunan_id,
         nama_bangunan = nama_bangunan,
+        nama_sungai = nama_sungai,
         lokasi_km_dari = lokasi_km_dari,
         lokasi_km_sampai = lokasi_km_sampai,
         koordinat_lat = koordinat_lat,

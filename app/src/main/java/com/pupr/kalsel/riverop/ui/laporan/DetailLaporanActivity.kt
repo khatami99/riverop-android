@@ -108,6 +108,9 @@ class DetailLaporanActivity : AppCompatActivity() {
                         "Bangunan ${index + 1} — $nama",
                         kode,
                         item.nama_bangunan,
+                        item.nama_sungai,
+                        item.lokasi_km_dari,
+                        item.lokasi_km_sampai,
                         item.koordinat_lat,
                         item.koordinat_lng
                     )
@@ -269,6 +272,9 @@ class DetailLaporanActivity : AppCompatActivity() {
             val judul: String,
             val kode: String?,
             val namaLabel: String? = null,
+            val namaSungai: String? = null,
+            val kmDari: Double? = null,
+            val kmSampai: Double? = null,
             val koordinatLat: Double? = null,
             val koordinatLng: Double? = null
         ) : DetailListItem()
@@ -322,6 +328,25 @@ class DetailLaporanActivity : AppCompatActivity() {
                         holder.binding.tvHeaderKodeOp.text = kodeText
                     } else {
                         holder.binding.tvHeaderKodeOp.visibility = View.GONE
+                    }
+
+                    // Baris lokasi sesuai blangko OP: nama sungai dan ruas patok
+                    // kilometer. Disembunyikan bila juru belum mengisinya.
+                    val lokasiBlangko = buildString {
+                        item.namaSungai?.takeIf { it.isNotBlank() }?.let {
+                            append("Sungai ").append(it.removePrefix("Sungai ").removePrefix("sungai "))
+                        }
+                        item.kmDari?.let { dari ->
+                            if (isNotEmpty()) append(" · ")
+                            append("Km ").append(angkaKm(dari))
+                            item.kmSampai?.let { append(" s/d Km ").append(angkaKm(it)) }
+                        }
+                    }
+                    if (lokasiBlangko.isNotBlank()) {
+                        holder.binding.tvHeaderLokasiBlangko.visibility = View.VISIBLE
+                        holder.binding.tvHeaderLokasiBlangko.text = lokasiBlangko
+                    } else {
+                        holder.binding.tvHeaderLokasiBlangko.visibility = View.GONE
                     }
 
                     // Titik lokasi; laporan lama dari sebelum GPS ada tidak punya
@@ -397,3 +422,12 @@ class DetailLaporanActivity : AppCompatActivity() {
         }
     }
 }
+
+/**
+ * Kilometer ditulis tanpa desimal bila memang bulat, dan memakai koma sesuai
+ * kebiasaan penulisan angka di Indonesia. Dijadikan fungsi tingkat berkas
+ * karena adapter detail adalah kelas bersarang yang tidak dapat memanggil
+ * metode milik activity-nya.
+ */
+private fun angkaKm(nilai: Double): String =
+    if (nilai % 1.0 == 0.0) nilai.toInt().toString() else nilai.toString().replace('.', ',')

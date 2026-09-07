@@ -70,13 +70,27 @@ val MIGRATION_2_3 = object : Migration(2, 3) {
     }
 }
 
+/**
+ * Menambah nama sungai pada bangunan yang diperiksa. Blangko OP menuliskan
+ * lokasi sebagai "Sungai <nama> pada ruas antara patok Km A s/d Km B";
+ * kilometernya sudah lama punya kolom, tetapi nama sungainya belum pernah ada
+ * sehingga baris itu tidak pernah bisa lengkap saat laporan dicetak.
+ *
+ * Cukup ALTER TABLE ADD COLUMN, yang sudah didukung SQLite bawaan minSdk 26.
+ */
+val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE item_inspeksi ADD COLUMN nama_sungai TEXT")
+    }
+}
+
 @Database(
     entities = [
         LaporanOpEntity::class,
         ItemInspeksiEntity::class,
         TemuanKondisiEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -97,7 +111,7 @@ abstract class RiverOpDatabase : RoomDatabase() {
                     RiverOpDatabase::class.java,
                     "river_op_database"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                     .fallbackToDestructiveMigration(false)
                     .build()
                 INSTANCE = instance

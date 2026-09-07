@@ -157,6 +157,9 @@ class FormBagian3Activity : AppCompatActivity() {
         lifecycleScope.launch {
             val existingItem = repository.getItemByUuid(itemUuid)
             existingItem?.nama_bangunan?.let { binding.etNamaBangunan.setText(it) }
+            existingItem?.nama_sungai?.let { binding.etNamaSungai.setText(it) }
+            existingItem?.lokasi_km_dari?.let { binding.etKmDari.setText(tulisKm(it)) }
+            existingItem?.lokasi_km_sampai?.let { binding.etKmSampai.setText(tulisKm(it)) }
 
             // Tampilkan titik yang sudah tersimpan agar juru tahu bangunan ini
             // sudah berlokasi, tanpa harus mengambil ulang.
@@ -392,6 +395,9 @@ class FormBagian3Activity : AppCompatActivity() {
         val foto2 = intent.getStringExtra("EXTRA_FOTO_2")
 
         val namaBangunan = binding.etNamaBangunan.text.toString().trim().ifEmpty { null }
+        val namaSungai = binding.etNamaSungai.text.toString().trim().ifEmpty { null }
+        val kmDari = bacaKm(binding.etKmDari.text.toString())
+        val kmSampai = bacaKm(binding.etKmSampai.text.toString())
 
         lifecycleScope.launch {
             try {
@@ -433,6 +439,7 @@ class FormBagian3Activity : AppCompatActivity() {
                         laporan_op_uuid = laporanUuid,
                         jenis_bangunan_id = jenisBangunanId,
                         nama_bangunan = null,
+                        nama_sungai = null,
                         lokasi_km_dari = null,
                         lokasi_km_sampai = null,
                         koordinat_lat = null,
@@ -445,6 +452,9 @@ class FormBagian3Activity : AppCompatActivity() {
                     )).let { dasar ->
                         dasar.copy(
                             nama_bangunan = namaBangunan,
+                            nama_sungai = namaSungai ?: dasar.nama_sungai,
+                            lokasi_km_dari = kmDari ?: dasar.lokasi_km_dari,
+                            lokasi_km_sampai = kmSampai ?: dasar.lokasi_km_sampai,
                             // Titik lama dipertahankan bila kali ini gagal diambil,
                             // supaya mengubah data tidak menghapus lokasi yang sudah ada.
                             koordinat_lat = lokasiLat ?: dasar.koordinat_lat,
@@ -476,8 +486,9 @@ class FormBagian3Activity : AppCompatActivity() {
                         laporan_op_uuid = laporanUuid,
                         jenis_bangunan_id = jenisBangunanId,
                         nama_bangunan = namaBangunan,
-                        lokasi_km_dari = null,
-                        lokasi_km_sampai = null,
+                        nama_sungai = namaSungai,
+                        lokasi_km_dari = kmDari,
+                        lokasi_km_sampai = kmSampai,
                         koordinat_lat = lokasiLat,
                         koordinat_lng = lokasiLng,
                         tipe_konstruksi = null,
@@ -615,6 +626,7 @@ class InspectionAdapter(
             binding.rbBermasalah.setTextColor(rusakTextColor)
         }
     }
+
 }
 
 data class InspectionItemData(
@@ -627,4 +639,13 @@ data class InspectionItemData(
     var foto3: String? = null
 )
 
+/**
+ * Juru bisa mengetik koma maupun titik sebagai pemisah desimal, tergantung
+ * papan ketik yang dipakai, jadi keduanya diterima. Kosong berarti belum diisi,
+ * bukan nol.
+ */
+private fun bacaKm(teks: String): Double? =
+    teks.trim().replace(',', '.').toDoubleOrNull()
 
+private fun tulisKm(nilai: Double): String =
+    if (nilai % 1.0 == 0.0) nilai.toInt().toString() else nilai.toString()

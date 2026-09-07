@@ -34,6 +34,18 @@
             android:textSize="12sp"
             tools:text="OP-01.b" />
 
+        <!-- Lokasi menurut blangko OP; disembunyikan bila belum diisi -->
+        <TextView
+            android:id="@+id/tvHeaderLokasiBlangko"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="#00838F"
+            android:textSize="12sp"
+            android:visibility="gone"
+            tools:text="Sungai Asam-asam · Km 3,2 s/d Km 3,8"
+            tools:visibility="visible" />
+
         <!-- Titik lokasi bangunan; disembunyikan bila belum terekam -->
         <TextView
             android:id="@+id/tvHeaderKoordinat"

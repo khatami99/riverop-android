@@ -109,6 +109,93 @@
                 android:paddingTop="4dp"
                 android:textSize="14sp" />
 
+            <!-- Lokasi menurut blangko OP: "Sungai <nama> pada ruas antara
+                 patok Km A s/d Km B". Tanpa ini baris Lokasi bangunan pada
+                 blangko hasil cetak tidak pernah bisa lengkap. -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="8dp"
+                android:background="#EEEEEE" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Nama Sungai"
+                android:textSize="12sp"
+                android:textColor="#666666" />
+
+            <EditText
+                android:id="@+id/etNamaSungai"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textCapWords"
+                android:maxLines="1"
+                android:imeOptions="actionNext"
+                android:background="@null"
+                android:hint="Contoh: Asam-asam"
+                android:paddingTop="4dp"
+                android:textSize="14sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Ruas antara patok kilometer"
+                android:textSize="12sp"
+                android:textColor="#666666" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:baselineAligned="false">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Km"
+                    android:textSize="13sp"
+                    android:textColor="#666666" />
+
+                <EditText
+                    android:id="@+id/etKmDari"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:inputType="numberDecimal"
+                    android:maxLines="1"
+                    android:imeOptions="actionNext"
+                    android:background="@null"
+                    android:hint="0"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:text="s/d  Km"
+                    android:textSize="13sp"
+                    android:textColor="#666666" />
+
+                <EditText
+                    android:id="@+id/etKmSampai"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:inputType="numberDecimal"
+                    android:maxLines="1"
+                    android:imeOptions="actionDone"
+                    android:background="@null"
+                    android:hint="0"
+                    android:textSize="14sp" />
+
+            </LinearLayout>
+
             <!-- Titik lokasi bangunan -->
             <View
                 android:layout_width="match_parent"
