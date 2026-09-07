@@ -8,6 +8,8 @@ import com.pupr.kalsel.riverop.data.local.entity.TemuanKondisiEntity
 import com.pupr.kalsel.riverop.models.SyncStatus
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 class LaporanRepository(private val database: RiverOpDatabase) {
 
@@ -56,14 +58,32 @@ class LaporanRepository(private val database: RiverOpDatabase) {
         itemInspeksiDao.deleteItemsByLaporanUuid(laporanUuid)
     }
 
-    fun getAllLaporan(): Flow<List<LaporanOpEntity>> {
-        return combine(
-            laporanOpDao.getAllNonSyncedFlow(),
-            laporanOpDao.getRecentSyncedFlow(50)
-        ) { nonSynced, recentSynced ->
-            (nonSynced + recentSynced).sortedByDescending { it.dibuat_di_hp }
+    /**
+     * Daftar laporan di layar juru.
+     *
+     * Laporan yang belum terkirim selalu ditampilkan seluruhnya — jumlahnya
+     * sedikit dan justru itu yang perlu ditindaklanjuti. Riwayat yang sudah
+     * terkirim dimuat bertahap mengikuti gulir.
+     *
+     * Sebelumnya riwayat dipatok 50 dan tidak pernah bertambah, sehingga
+     * laporan lama diam-diam hilang dari HP begitu juru melewati angka itu —
+     * padahal riwayat sengaja disimpan karena juru sering membukanya kembali
+     * di lapangan.
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun getAllLaporan(batasRiwayat: Flow<Int>): Flow<List<LaporanOpEntity>> {
+        return batasRiwayat.flatMapLatest { batas ->
+            combine(
+                laporanOpDao.getAllNonSyncedFlow(),
+                laporanOpDao.getRecentSyncedFlow(batas)
+            ) { belumTerkirim, riwayat ->
+                (belumTerkirim + riwayat).sortedByDescending { it.dibuat_di_hp }
+            }
         }
     }
+
+    /** Dipakai layar daftar untuk tahu masih ada riwayat yang belum dimuat. */
+    suspend fun hitungRiwayatTerkirim(): Int = laporanOpDao.hitungBerstatus(SyncStatus.SYNCED.name)
 
     suspend fun getUnsyncedLaporan(): List<LaporanOpEntity> {
         return laporanOpDao.getUnsyncedLaporan()

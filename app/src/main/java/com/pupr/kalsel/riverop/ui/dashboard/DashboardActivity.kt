@@ -7,6 +7,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.flow.MutableStateFlow
 import androidx.work.*
 import com.pupr.kalsel.riverop.data.local.RiverOpDatabase
 import com.pupr.kalsel.riverop.data.repository.LaporanRepository
@@ -22,6 +24,10 @@ import com.google.gson.Gson
 import com.pupr.kalsel.riverop.data.remote.RetrofitClient
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
+
+/** Jumlah riwayat terkirim yang dimuat pertama kali, lalu tiap kali menggulir. */
+private const val BATAS_RIWAYAT_AWAL = 50
+private const val BATAS_RIWAYAT_TAMBAHAN = 50
 
 private const val SESSION_DURATION_MS = 30L * 24 * 60 * 60 * 1000
 
@@ -90,11 +96,52 @@ class DashboardActivity : AppCompatActivity() {
 
         binding.rvLaporan.layoutManager = LinearLayoutManager(this)
         binding.rvLaporan.adapter = adapter
+        pasangGulirTakBerujung()
+    }
+
+    /**
+     * Riwayat terkirim dimuat bertahap. Nilainya naik saat gulir mendekati
+     * dasar daftar, sehingga juru dengan ratusan laporan tetap bisa membuka
+     * laporan lamanya tanpa memaksa HP memuat semuanya sekaligus.
+     */
+    private val batasRiwayat = MutableStateFlow(BATAS_RIWAYAT_AWAL)
+    private var sedangMemuatRiwayat = false
+
+    private fun pasangGulirTakBerujung() {
+        binding.rvLaporan.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
+                if (dy <= 0) return
+
+                val tataLetak = rv.layoutManager as? LinearLayoutManager ?: return
+                val terakhirTerlihat = tataLetak.findLastVisibleItemPosition()
+
+                if (terakhirTerlihat >= tataLetak.itemCount - 5) {
+                    muatRiwayatBerikutnya()
+                }
+            }
+        })
+    }
+
+    private fun muatRiwayatBerikutnya() {
+        if (sedangMemuatRiwayat) return
+        sedangMemuatRiwayat = true
+
+        lifecycleScope.launch {
+            val tersedia = repository.hitungRiwayatTerkirim()
+
+            // Berhenti menambah bila seluruh riwayat sudah termuat, supaya
+            // gulir sampai dasar tidak memicu permintaan tanpa akhir.
+            if (batasRiwayat.value < tersedia) {
+                batasRiwayat.value += BATAS_RIWAYAT_TAMBAHAN
+            }
+
+            sedangMemuatRiwayat = false
+        }
     }
 
     private fun observeLaporan() {
         lifecycleScope.launch {
-            repository.getAllLaporan().collect { list ->
+            repository.getAllLaporan(batasRiwayat).collect { list ->
                 adapter.setLaporan(list)
                 if (list.isEmpty()) {
                     binding.tvEmptyState.visibility = View.VISIBLE
