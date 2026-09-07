@@ -27,7 +27,9 @@ data class ProfilResponse(
     val id: Int,
     val nama: String,
     val username: String,
-    val nip: String?,
+    // Juru sungai bukan PNS sehingga tidak punya NIP; server kini mengirim
+    // nomor telepon, yang dipakai dinas untuk menghubungi mereka.
+    val no_telepon: String?,
     val nama_das: String?
 )
 
