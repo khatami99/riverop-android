@@ -9,6 +9,7 @@ import com.pupr.kalsel.riverop.data.local.entity.LaporanOpEntity
 import com.pupr.kalsel.riverop.data.local.entity.toUploadModel
 import com.pupr.kalsel.riverop.data.remote.LaporanSyncRequest
 import com.pupr.kalsel.riverop.data.remote.RetrofitClient
+import com.pupr.kalsel.riverop.data.remote.StatusSinkronisasiRequest
 import com.pupr.kalsel.riverop.data.repository.LaporanRepository
 import com.pupr.kalsel.riverop.models.SyncStatus
 import com.pupr.kalsel.riverop.utils.PrefsHelper
@@ -34,7 +35,10 @@ class SyncWorker(
 
         return try {
             val pending = repo.getUnsyncedLaporan()
-            if (pending.isEmpty()) return Result.success()
+            if (pending.isEmpty()) {
+                laporStatus(repo, token, null)
+                return Result.success()
+            }
 
             var hasFailure = false
 
@@ -122,11 +126,42 @@ class SyncWorker(
                 }
             }
 
+            laporStatus(repo, token, if (hasFailure) "Sebagian laporan gagal terkirim" else null)
+
             if (hasFailure) Result.retry() else Result.success()
 
         } catch (e: Exception) {
             android.util.Log.e("SyncWorker", "doWork fatal error: ${e.message}", e)
+            laporStatus(repo, token, e.message?.take(255))
             Result.failure()
+        }
+    }
+
+    /**
+     * Mengabarkan keadaan antrean di HP ini ke server.
+     *
+     * Server tidak bisa mengetahuinya sendiri: laporan yang gagal terkirim
+     * memang tidak pernah sampai ke sana. Kegagalan mengabarkan pun sengaja
+     * ditelan — kalau jaringan sedang mati, tidak ada gunanya menggagalkan
+     * seluruh pekerjaan sinkronisasi hanya karena kabarnya tidak terkirim.
+     */
+    private suspend fun laporStatus(repo: LaporanRepository, token: String, pesan: String?) {
+        try {
+            val versi = applicationContext.packageManager
+                .getPackageInfo(applicationContext.packageName, 0).versionName
+
+            RetrofitClient.getApiService().laporStatusSinkronisasi(
+                "Bearer $token",
+                StatusSinkronisasiRequest(
+                    jumlah_tertunda = repo.hitungBerstatus(SyncStatus.LOCAL),
+                    jumlah_gagal = repo.hitungBerstatus(SyncStatus.FAILED),
+                    jumlah_terkirim = repo.hitungBerstatus(SyncStatus.SYNCED),
+                    versi_aplikasi = versi,
+                    pesan_terakhir = pesan
+                )
+            )
+        } catch (e: Exception) {
+            android.util.Log.w("SyncWorker", "Gagal mengabarkan status: ${e.message}")
         }
     }
 

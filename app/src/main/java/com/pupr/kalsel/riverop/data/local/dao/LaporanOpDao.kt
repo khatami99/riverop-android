@@ -30,4 +30,7 @@ interface LaporanOpDao {
 
     @Query("UPDATE laporan_op SET sync_status = :status WHERE uuid = :uuid")
     suspend fun updateSyncStatus(uuid: String, status: String)
+
+    @Query("SELECT COUNT(*) FROM laporan_op WHERE sync_status = :status")
+    suspend fun hitungBerstatus(status: String): Int
 }

@@ -43,6 +43,13 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Part file: MultipartBody.Part
     ): Response<UploadFotoResponse>
+
+    @POST("api/sinkronisasi/status")
+    suspend fun laporStatusSinkronisasi(
+        @Header("Authorization") token: String,
+        @Body request: StatusSinkronisasiRequest
+    ): Response<StatusSinkronisasiResponse>
+
 }
 
 data class UploadFotoResponse(

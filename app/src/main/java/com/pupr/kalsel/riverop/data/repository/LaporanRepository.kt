@@ -89,6 +89,10 @@ class LaporanRepository(private val database: RiverOpDatabase) {
         laporanOpDao.updateSyncStatus(uuid, status.name)
     }
 
+    suspend fun hitungBerstatus(status: SyncStatus): Int {
+        return laporanOpDao.hitungBerstatus(status.name)
+    }
+
     suspend fun deleteLaporan(uuid: String) {
         database.withTransaction {
             val laporan = laporanOpDao.getLaporanByUuid(uuid)

@@ -152,3 +152,23 @@ data class LaporanSyncResponse(
     val success: Boolean,
     val synced_uuids: List<String>
 )
+
+/**
+ * Kabar keadaan sinkronisasi dari HP juru ke server.
+ *
+ * Diperlukan karena laporan yang GAGAL terkirim, menurut definisinya, tidak
+ * pernah sampai ke server — status TERTUNDA dan GAGAL hanya hidup di HP,
+ * sehingga dinas tidak akan pernah tahu tanpa dikabari.
+ */
+data class StatusSinkronisasiRequest(
+    val jumlah_tertunda: Int,
+    val jumlah_gagal: Int,
+    val jumlah_terkirim: Int,
+    val versi_aplikasi: String?,
+    val pesan_terakhir: String?
+)
+
+data class StatusSinkronisasiResponse(
+    val success: Boolean,
+    val message: String
+)
