@@ -55,7 +55,6 @@ data class KabupatenModel(
 
 data class WilayahSungaiModel(
     val id: Int,
-    val kabupaten_id: Int,
     val nama_sungai: String,
     val kode_sungai: String,
     val aktif: Boolean
