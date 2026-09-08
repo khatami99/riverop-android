@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Berlaku HANYA untuk build debug.
+
+    Server pengembangan berjalan di http biasa, jadi build debug perlu izin
+    lalu lintas tanpa enkripsi. Build rilis TIDAK mendapat izin ini: kalau
+    suatu hari alamat produksinya keliru ditulis http, aplikasinya akan
+    menolak menyambung — jauh lebih baik daripada diam-diam mengirim sandi
+    juru dan isi laporan dalam keadaan terbaca.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application android:usesCleartextTraffic="true" />
+
+</manifest>

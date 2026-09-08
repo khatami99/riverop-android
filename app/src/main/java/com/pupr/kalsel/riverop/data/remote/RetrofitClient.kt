@@ -1,5 +1,6 @@
 package com.pupr.kalsel.riverop.data.remote
 
+import com.pupr.kalsel.riverop.BuildConfig
 import com.pupr.kalsel.riverop.utils.SessionManager
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -8,9 +9,17 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
 
-//    private var baseUrl: String = "http://192.168.1.8:8000/" //wifi rumah
-
-    private var baseUrl: String = "http://10.164.28.177:8000/" //vivo v21
+    /**
+     * Alamat server datang dari build, bukan dari baris ini.
+     *
+     * Build debug memakai 127.0.0.1 lewat kabel USB ("adb reverse tcp:8000
+     * tcp:8000"); build rilis memakai alamat dinas yang wajib https. Keduanya
+     * diatur di app/build.gradle.kts dan diisi lewat local.properties.
+     *
+     * Dulu alamatnya ditulis di sini dan diganti-ganti tiap pindah wifi, yang
+     * berarti berkas ini tidak pernah boleh ikut ke git.
+     */
+    private var baseUrl: String = BuildConfig.BASE_URL
 
     private var retrofit: Retrofit? = null
 

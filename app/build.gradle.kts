@@ -1,6 +1,27 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.ksp)
+}
+
+/**
+ * Alamat server TIDAK ditulis di dalam kode.
+ *
+ * Dulu alamatnya dipatok di RetrofitClient, sehingga tiap pindah jaringan
+ * berarti mengedit kode lalu memasang ulang aplikasi — dan berkas itu sampai
+ * harus dikecualikan dari git supaya alamat laptop pribadi tidak ikut terkirim.
+ *
+ * Sekarang alamatnya dibaca dari local.properties, berkas yang memang sudah
+ * diabaikan git dan berbeda-beda di tiap mesin. Ini padanan .env di sisi
+ * Laravel: kodenya sama di semua tempat, yang berbeda cuma isian di luarnya.
+ */
+fun alamatServer(kunci: String): String? {
+    val berkas = rootProject.file("local.properties")
+    if (!berkas.exists()) return null
+    val isi = Properties()
+    berkas.inputStream().use { isi.load(it) }
+    return isi.getProperty(kunci)?.trim()?.takeIf { it.isNotEmpty() }
 }
 
 android {
@@ -22,12 +43,67 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Bawaannya lewat kabel USB: "adb reverse tcp:8000 tcp:8000"
+            // membuat 127.0.0.1 di HP menunjuk ke laptop. Alamat ini berlaku
+            // di mesin siapa pun, jadi aman ikut masuk git — tidak ada lagi
+            // IP pribadi yang tercecer di dalam kode.
+            //
+            // Mau lewat wifi? Tulis di local.properties:
+            //   riverop.baseUrl=http://192.168.1.8:8000/
+            buildConfigField(
+                "String",
+                "BASE_URL",
+                "\"${alamatServer("riverop.baseUrl") ?: "http://127.0.0.1:8000/"}\""
+            )
+        }
+
         release {
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+
+            // Alamat rilis TIDAK punya nilai cadangan yang bisa dipakai.
+            //
+            // Kalau build rilis diam-diam memakai alamat bawaan, suatu hari
+            // APK yang menunjuk laptop pribadi akan terbagikan ke pegawai
+            // dinas, dan tidak ada yang menyadarinya sampai gagal di lapangan.
+            //
+            // Pemeriksaannya hanya berlaku saat yang diminta memang tugas
+            // rilis; kalau tidak, build debug sehari-hari ikut terhenti cuma
+            // karena alamat produksi belum ada — padahal memang belum waktunya.
+            val sedangRilis = gradle.startParameter.taskNames
+                .any { it.contains("Release", ignoreCase = true) }
+
+            val alamat = alamatServer("riverop.baseUrl.release")
+
+            if (sedangRilis && alamat == null) {
+                throw GradleException(
+                    """
+                    riverop.baseUrl.release belum diisi di local.properties.
+                    Isi dengan alamat server dinas, contoh:
+                      riverop.baseUrl.release=https://op-sungai.contoh.go.id/
+                    """.trimIndent()
+                )
+            }
+
+            if (alamat != null && !alamat.startsWith("https://")) {
+                throw GradleException(
+                    """
+                    riverop.baseUrl.release harus memakai https://, bukan http://.
+                    Tanpa itu, sandi juru dan isi laporan berjalan tanpa enkripsi.
+                    """.trimIndent()
+                )
+            }
+
+            // Cadangan yang sengaja tidak bisa dihubungi. TLD .invalid dijamin
+            // tidak pernah ada, jadi APK rilis yang lolos tanpa alamat sungguhan
+            // akan gagal menyambung — bukan diam-diam mengirim data entah ke mana.
+            val alamatRilis = alamat ?: "https://belum-diatur.invalid/"
+
+            buildConfigField("String", "BASE_URL", "\"$alamatRilis\"")
         }
     }
 
@@ -38,6 +114,7 @@ android {
 
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 
 }

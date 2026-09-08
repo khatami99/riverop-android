@@ -81,15 +81,54 @@ DB_PASSWORD=
 
 ### Setup Android
 
-1. Buka project di Android Studio
-2. Update IP server di `RetrofitClient.kt`:
-   ```kotlin
-   private var baseUrl: String = "http://YOUR_LOCAL_IP:8000/"
-   ```
-3. Pastikan HP dan komputer terhubung ke jaringan WiFi yang sama
-4. Run ke device
+Alamat server **tidak lagi ditulis di dalam kode**. Build debug otomatis
+menunjuk `http://127.0.0.1:8000/`, yang lewat kabel USB berarti laptopmu
+sendiri. Jadi tidak ada yang perlu diedit tiap pindah jaringan.
 
-> **Catatan:** IP lokal bisa berubah setiap pindah jaringan. Cek dengan `ipconfig` (Windows) dan perbarui `RetrofitClient.kt` setiap sesi development.
+1. Buka project di Android Studio
+2. Colok HP ke laptop, nyalakan **USB debugging**
+3. Buka terowongan USB-nya:
+   ```bash
+   adb reverse tcp:8000 tcp:8000
+   ```
+4. Jalankan server Laravel di laptop (`php artisan serve`)
+5. Run ke device
+
+> Perintah `adb reverse` diulang tiap kali kabel dicabut atau adb restart.
+
+**Kenapa lewat kabel, bukan wifi?** Banyak router — termasuk bawaan ISP dan
+jaringan tamu — menyalakan *AP Isolation*, yang melarang perangkat di wifi yang
+sama saling menghubungi. Gejalanya membingungkan: HP dan laptop satu jaringan,
+IP-nya benar, tapi `ping` pun gagal dengan *Destination Host Unreachable*.
+Lewat kabel, seluruh persoalan itu tidak ada.
+
+#### Kalau tetap mau lewat wifi
+
+Buat berkas `local.properties` di akar project (berkas ini diabaikan git,
+jadi alamat laptopmu tidak ikut terkirim):
+
+```properties
+riverop.baseUrl=http://192.168.1.8:8000/
+```
+
+Ganti dengan IP laptopmu (`ipconfig` → IPv4 Address). Syaratnya AP Isolation
+di router harus mati, dan port 8000 diizinkan Windows Firewall:
+
+```
+netsh advfirewall firewall add rule name="RiverOP dev 8000" dir=in action=allow protocol=TCP localport=8000
+```
+
+#### Build rilis
+
+Build rilis **tidak punya alamat bawaan** dan akan menolak jalan sampai diisi:
+
+```properties
+riverop.baseUrl.release=https://alamat-server-dinas.go.id/
+```
+
+Wajib `https://`. Build debug boleh `http://` biasa lewat manifest terpisah di
+`app/src/debug/`; build rilis tidak mendapat izin itu, sehingga sandi juru dan
+isi laporan tidak mungkin terkirim tanpa enkripsi.
 
 ## Alur Penggunaan
 
