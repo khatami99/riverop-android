@@ -16,19 +16,46 @@
         android:textSize="12sp"
         android:textStyle="bold" />
 
-    <!-- Dibuat bisa dipilih supaya alamatnya dapat disalin dan dibacakan
-         lewat telepon tanpa salah eja. -->
-    <TextView
-        android:id="@+id/tvAlamatServer"
+    <!-- Dapat diketik ulang pada build debug: alamat terowongan sementara
+         berubah tiap kali dinyalakan, dan orang yang memegang HP belum tentu
+         bisa membangun ulang APK. Build rilis mengunci kolom ini. -->
+    <EditText
+        android:id="@+id/etAlamatServer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:background="@color/surface_medium"
         android:fontFamily="monospace"
+        android:hint="https://…"
+        android:imeOptions="actionDone"
+        android:inputType="textUri"
+        android:maxLines="2"
         android:padding="10dp"
         android:textColor="@color/text_primary"
-        android:textIsSelectable="true"
+        android:textColorHint="@color/text_hint"
         android:textSize="13sp" />
+
+    <TextView
+        android:id="@+id/tvPetunjukAlamat"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:text="Ubah alamat lalu tekan Uji Sekarang untuk menyimpannya."
+        android:textColor="@color/text_secondary"
+        android:textSize="11.5sp" />
+
+    <TextView
+        android:id="@+id/tvKembalikanBawaan"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp"
+        android:text="Kembalikan alamat bawaan"
+        android:textColor="@color/primary_light"
+        android:textSize="11.5sp"
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/tvHasilUji"

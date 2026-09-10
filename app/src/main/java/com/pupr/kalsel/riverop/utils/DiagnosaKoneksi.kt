@@ -9,6 +9,7 @@ import androidx.lifecycle.lifecycleScope
 import com.pupr.kalsel.riverop.BuildConfig
 import com.pupr.kalsel.riverop.R
 import com.pupr.kalsel.riverop.data.remote.RetrofitClient
+import androidx.annotation.ColorRes
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import java.net.SocketTimeoutException
@@ -33,13 +34,27 @@ object DiagnosaKoneksi {
 
     fun tampilkan(activity: Activity) {
         val tampilan = activity.layoutInflater.inflate(R.layout.dialog_uji_koneksi, null)
-        val tvAlamat = tampilan.findViewById<android.widget.TextView>(R.id.tvAlamatServer)
+        val etAlamat = tampilan.findViewById<android.widget.EditText>(R.id.etAlamatServer)
+        val tvPetunjuk = tampilan.findViewById<android.widget.TextView>(R.id.tvPetunjukAlamat)
+        val tvBawaan = tampilan.findViewById<android.widget.TextView>(R.id.tvKembalikanBawaan)
         val tvHasil = tampilan.findViewById<android.widget.TextView>(R.id.tvHasilUji)
         val tvVersi = tampilan.findViewById<android.widget.TextView>(R.id.tvVersiAplikasi)
         val barisMenunggu = tampilan.findViewById<View>(R.id.barisMenunggu)
 
-        tvAlamat.text = RetrofitClient.getBaseUrl()
+        etAlamat.setText(RetrofitClient.getBaseUrl())
         tvVersi.text = "Versi ${BuildConfig.VERSION_NAME} · ${BuildConfig.BUILD_TYPE}"
+
+        if (!BuildConfig.DEBUG) {
+            etAlamat.isEnabled = false
+            tvPetunjuk.visibility = View.GONE
+            tvBawaan.visibility = View.GONE
+        }
+
+        tvBawaan.setOnClickListener {
+            AlamatServer.kembalikanBawaan(activity)
+            etAlamat.setText(RetrofitClient.getBaseUrl())
+            tvHasil.visibility = View.GONE
+        }
 
         val dialog = AlertDialog.Builder(activity)
             .setTitle("Uji Koneksi Server")
@@ -53,6 +68,19 @@ object DiagnosaKoneksi {
         dialog.setOnShowListener {
             val tombol = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
             tombol.setOnClickListener {
+                val diketik = etAlamat.text.toString().trim()
+
+                if (BuildConfig.DEBUG && diketik.removeSuffix("/") != RetrofitClient.getBaseUrl()) {
+                    if (!AlamatServer.sah(diketik)) {
+                        tampilkanPesan(
+                            activity, tvHasil, R.color.kondisi_rusak_bg, R.color.kondisi_rusak,
+                            "Alamat harus diawali http:// atau https://"
+                        )
+                        return@setOnClickListener
+                    }
+                    AlamatServer.simpan(activity, diketik)
+                }
+
                 tombol.isEnabled = false
                 tvHasil.visibility = View.GONE
                 barisMenunggu.visibility = View.VISIBLE
@@ -131,6 +159,16 @@ object DiagnosaKoneksi {
             )
         }
 
+        tampilkanPesan(activity, tv, latar, teks, pesan)
+    }
+
+    private fun tampilkanPesan(
+        activity: Activity,
+        tv: android.widget.TextView,
+        @ColorRes latar: Int,
+        @ColorRes teks: Int,
+        pesan: String
+    ) {
         tv.setBackgroundColor(ContextCompat.getColor(activity, latar))
         tv.setTextColor(ContextCompat.getColor(activity, teks))
         tv.text = pesan

@@ -27,7 +27,13 @@ object SesiJuru {
     fun bersihkan(context: Context) {
         val app = context.applicationContext
 
+        // Alamat server menyangkut perangkat, bukan sesi. Kalau ikut terhapus,
+        // juru yang keluar sekali harus mengetiknya lagi untuk bisa masuk.
+        val alamat = AlamatServer.tersimpan(app)
+
         PrefsHelper.get(app).edit().clear().apply()
+
+        alamat?.let { AlamatServer.simpan(app, it) }
 
         app.getSharedPreferences("${app.packageName}_preferences", Context.MODE_PRIVATE)
             .edit().clear().apply()
