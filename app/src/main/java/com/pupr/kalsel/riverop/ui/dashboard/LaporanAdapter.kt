@@ -60,7 +60,14 @@ class LaporanAdapter(
                 SyncStatus.FAILED -> R.color.status_failed
             }
 
+            // Teks lencana ikut statusnya, tidak dipatok putih: putih di atas
+            // emas cuma 2,22 : 1 dan praktis tidak terbaca di bawah matahari.
+            val warnaTeks = if (laporan.sync_status == SyncStatus.LOCAL ||
+                laporan.sync_status == SyncStatus.SYNCING
+            ) R.color.on_status_local else R.color.white
+
             binding.tvStatusBadge.text = laporan.sync_status.label
+            binding.tvStatusBadge.setTextColor(ContextCompat.getColor(binding.root.context, warnaTeks))
             binding.cvStatus.setCardBackgroundColor(ContextCompat.getColor(binding.root.context, colorRes))
 
             binding.root.setOnClickListener {

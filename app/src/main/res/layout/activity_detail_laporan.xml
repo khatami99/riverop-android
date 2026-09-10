@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F5F5F5">
+    android:background="@color/surface_soft">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
@@ -54,7 +54,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Tanggal Inspeksi"
-                                android:textColor="#888888"
+                                android:textColor="@color/text_secondary"
                                 android:textSize="12sp" />
 
                             <TextView
@@ -98,10 +98,10 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="12dp"
-                        android:background="#FFF9C4"
+                        android:background="@color/warn_bg"
                         android:padding="8dp"
                         android:text="Data laporan belum lengkap. Harap lengkapi semua foto &amp; parameter sebelum melakukan sinkronisasi data."
-                        android:textColor="#795548"
+                        android:textColor="@color/warn_text"
                         android:textSize="13sp"
                         android:visibility="gone"
                         tools:visibility="visible" />
@@ -109,7 +109,7 @@
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="#E0E0E0"
+                        android:background="@color/divider"
                         android:layout_marginBottom="12dp" />
 
                     <LinearLayout
@@ -129,7 +129,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Cuaca"
-                                android:textColor="#888888"
+                                android:textColor="@color/text_secondary"
                                 android:textSize="12sp" />
 
                             <TextView
@@ -154,7 +154,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Debit Air"
-                                android:textColor="#888888"
+                                android:textColor="@color/text_secondary"
                                 android:textSize="12sp" />
 
                             <TextView
@@ -175,7 +175,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Catatan Umum"
-                        android:textColor="#888888"
+                        android:textColor="@color/text_secondary"
                         android:textSize="12sp" />
 
                     <TextView
@@ -191,7 +191,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Kendala"
-                        android:textColor="#888888"
+                        android:textColor="@color/text_secondary"
                         android:textSize="12sp" />
 
                     <TextView
@@ -205,7 +205,7 @@
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="#E0E0E0"
+                        android:background="@color/divider"
                         android:layout_marginTop="12dp"
                         android:layout_marginBottom="12dp" />
 
@@ -213,7 +213,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Foto Lokasi"
-                        android:textColor="#888888"
+                        android:textColor="@color/text_secondary"
                         android:textSize="12sp"
                         android:layout_marginBottom="8dp" />
 
@@ -232,7 +232,7 @@
                             android:layout_weight="1"
                             android:layout_marginEnd="4dp"
                             android:scaleType="centerCrop"
-                            android:background="#E0E0E0"
+                            android:background="@color/divider"
                             android:visibility="gone"
                             tools:visibility="visible" />
 
@@ -243,7 +243,7 @@
                             android:layout_weight="1"
                             android:layout_marginStart="4dp"
                             android:scaleType="centerCrop"
-                            android:background="#E0E0E0"
+                            android:background="@color/divider"
                             android:visibility="gone"
                             tools:visibility="visible" />
 
@@ -254,7 +254,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Tidak ada foto lokasi"
-                        android:textColor="#888888"
+                        android:textColor="@color/text_secondary"
                         android:textSize="13sp"
                         android:visibility="gone"
                         tools:visibility="visible" />
@@ -295,7 +295,7 @@
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="16dp"
                 android:text="Hapus Laporan"
-                android:backgroundTint="#D32F2F"
+                android:backgroundTint="@color/status_failed"
                 android:textColor="@color/white"
                 android:visibility="gone"
                 tools:visibility="visible" />

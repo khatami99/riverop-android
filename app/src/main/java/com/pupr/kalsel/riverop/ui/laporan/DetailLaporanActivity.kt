@@ -2,7 +2,6 @@ package com.pupr.kalsel.riverop.ui.laporan
 
 import android.app.Dialog
 import android.content.Intent
-import android.graphics.Color
 import androidx.core.content.ContextCompat
 import com.pupr.kalsel.riverop.R
 import android.os.Bundle
@@ -147,14 +146,23 @@ class DetailLaporanActivity : AppCompatActivity() {
         val status = laporan.sync_status
         binding.tvStatusBadge.text = status.label
 
-        val colorHex = when (status) {
-            SyncStatus.DRAFT -> "#9E9E9E"
-            SyncStatus.LOCAL -> "#FF9800"
-            SyncStatus.SYNCING -> "#FF9800"
-            SyncStatus.SYNCED -> "#4CAF50"
-            SyncStatus.FAILED -> "#F44336"
+        // Diambil dari palet, bukan ditulis sebagai heksa di sini. Warna yang
+        // hidup di dua tempat pasti bergeser sendiri suatu saat, dan yang di
+        // dalam kode adalah yang paling jarang ikut diperbarui.
+        val warna = when (status) {
+            SyncStatus.DRAFT -> R.color.status_draft
+            SyncStatus.LOCAL, SyncStatus.SYNCING -> R.color.status_local
+            SyncStatus.SYNCED -> R.color.status_synced
+            SyncStatus.FAILED -> R.color.status_failed
         }
-        binding.cardStatusBadge.setCardBackgroundColor(Color.parseColor(colorHex))
+        val warnaTeks = if (status == SyncStatus.LOCAL || status == SyncStatus.SYNCING) {
+            R.color.on_status_local
+        } else {
+            R.color.white
+        }
+
+        binding.tvStatusBadge.setTextColor(ContextCompat.getColor(this, warnaTeks))
+        binding.cardStatusBadge.setCardBackgroundColor(ContextCompat.getColor(this, warna))
 
         val foto1 = laporan.foto_lokasi_1
         val foto2 = laporan.foto_lokasi_2

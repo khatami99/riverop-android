@@ -1,25 +1,95 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Palet aplikasi juru, disamakan dengan dasbor web.
+
+    Sebelumnya keduanya memakai warna yang mirip tapi tidak sama: biru tua
+    #1B3A6B di sini melawan #0a2c48 di web, emas #D4A017 melawan #ebbd51.
+    Beda tipis semacam itu justru yang membuat dua aplikasi terasa dibuat
+    orang berbeda.
+
+    Nilainya diambil dari resources/css/app.css pada repo web, dan nama
+    lamanya dipertahankan supaya sembilan puluhan rujukan yang sudah ada
+    tidak perlu disentuh sama sekali.
+
+    Yang di web berupa palet mode gelap tidak diikutkan: aplikasi ini selalu
+    terang, sebab dipakai di tepi sungai pada siang hari, dan tema malamnya
+    memang sudah disetel sama dengan tema terang sejak awal.
+-->
 <resources>
-    <color name="primary">#1B3A6B</color>
-    <color name="primary_light">#2952A3</color>
-    <color name="primary_dark">#0F2347</color>
-    <color name="accent_gold">#D4A017</color>
-    <color name="accent_gold_dark">#A67C00</color>
-    <color name="accent_red">#C0392B</color>
-    <color name="background">#F5F5F5</color>
-    <color name="surface">#FFFFFF</color>
-    <color name="text_primary">#212121</color>
-    <color name="text_secondary">#757575</color>
-    <color name="text_hint">#9E9E9E</color>
-    <color name="status_draft">#757575</color>
-    <color name="status_local">#F59E0B</color>
-    <color name="status_synced">#10B981</color>
-    <color name="status_failed">#EF4444</color>
+
+    <!-- ==========================================================
+         Biru sungai — diambil dari gelombang pada logo aplikasi
+         ========================================================== -->
+    <color name="primary">#0A2C48</color>          <!-- aksi utama, kop halaman -->
+    <color name="primary_light">#12639E</color>    <!-- tautan, aksi kedua -->
+    <color name="primary_dark">#061523</color>
+
+    <!-- Untuk teks dan ikon DI ATAS primary. Bukan putih penuh: keterangan
+         yang selalu seterang judulnya membuat keduanya berebut perhatian. -->
+    <color name="on_primary_muted">#BEE2FD</color>
+
+    <!-- ==========================================================
+         Emas — satu-satunya warna yang hadir di logo provinsi
+         sekaligus logo aplikasi
+         ========================================================== -->
+    <color name="accent_gold">#EBBD51</color>
+    <color name="accent_gold_dark">#935C13</color>
+
+    <!-- Merah — dari bingkai logo provinsi -->
+    <color name="accent_red">#A50E26</color>
+
+    <!-- ==========================================================
+         Permukaan dan garis
+         ========================================================== -->
+    <color name="background">#FBFCFD</color>       <!-- latar layar -->
+    <color name="surface">#FFFFFF</color>          <!-- kartu -->
+    <color name="surface_soft">#F8FAFC</color>     <!-- isian, arsiran halus -->
+    <color name="surface_medium">#F1F5F9</color>   <!-- lencana, pil -->
+    <color name="divider">#E2E8F0</color>
+    <color name="line_strong">#CBD5E1</color>
+
+    <!-- ==========================================================
+         Teks — tingkatannya dijaga kontras yang sudah diukur
+         di atas latar putih:  tegas 18,7  ·  body 9,7
+                               secondary 4,8  ·  hint 2,6
+         hint hanya untuk tulisan pemandu dan kontrol mati, tidak
+         pernah untuk kalimat yang harus dibaca.
+         ========================================================== -->
+    <color name="text_primary">#0F172A</color>
+    <color name="text_body">#334155</color>
+    <color name="text_secondary">#64748B</color>
+    <color name="text_hint">#94A3B8</color>
+
+    <!-- ==========================================================
+         Keadaan sinkronisasi
+         ========================================================== -->
+    <!-- Emas terlalu terang untuk teks putih: 2,22 : 1, jauh di bawah ambang.
+         Pasangannya cokelat tua, persis seperti kartu "belum melapor" di web.
+         Karena itu warna TEKS lencana ikut berubah menurut statusnya, tidak
+         dipatok putih untuk semua. -->
+    <color name="on_status_local">#683E18</color>
+
+    <color name="status_draft">#64748B</color>
+    <color name="status_local">#D9A63B</color>
+    <color name="status_synced">#0F7A3D</color>
+    <color name="status_failed">#C8102E</color>
+
+    <!-- ==========================================================
+         Kondisi bangunan, sepasang latar dengan teksnya
+         ========================================================== -->
+    <color name="kondisi_normal">#0D6132</color>
+    <color name="kondisi_normal_bg">#EEFBF3</color>
+    <color name="kondisi_rusak">#A50E26</color>
+    <color name="kondisi_rusak_bg">#FEF2F3</color>
+
+    <!-- Keterangan dan peringatan. Teal dipakai untuk penjelasan supaya
+         tidak tertukar dengan biru tombol tindakan — "ini penjelasan" dan
+         "ini yang harus diklik" tidak boleh terlihat serupa. -->
+    <color name="note_bg">#F2F9FA</color>
+    <color name="note_text">#16585C</color>
+    <color name="warn_bg">#FDF8EC</color>
+    <color name="warn_text">#683E18</color>
+
     <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>
-    <color name="divider">#E0E0E0</color>
-    <color name="kondisi_normal">#10B981</color>
-    <color name="kondisi_normal_bg">#E8F8F3</color>
-    <color name="kondisi_rusak">#EF4444</color>
-    <color name="kondisi_rusak_bg">#FEECEC</color>
 </resources>

@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     android:layout_marginTop="12dp"
     android:layout_marginBottom="8dp"
-    app:cardBackgroundColor="#E0F7FA"
+    app:cardBackgroundColor="@color/note_bg"
     app:cardCornerRadius="8dp"
     app:cardElevation="0dp">
 
@@ -20,7 +20,7 @@
             android:id="@+id/tvHeaderNamaBangunan"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="#006064"
+            android:textColor="@color/note_text"
             android:textSize="15sp"
             android:textStyle="bold"
             tools:text="Bangunan 1 — Tanggul Banjir" />
@@ -30,7 +30,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
-            android:textColor="#006064"
+            android:textColor="@color/note_text"
             android:textSize="12sp"
             tools:text="OP-01.b" />
 
@@ -40,7 +40,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:textColor="#00838F"
+            android:textColor="@color/note_text"
             android:textSize="12sp"
             android:visibility="gone"
             tools:text="Sungai Asam-asam · Km 3,2 s/d Km 3,8"
@@ -52,10 +52,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:background="#B2EBF2"
+            android:background="@color/note_bg"
             android:paddingHorizontal="8dp"
             android:paddingVertical="3dp"
-            android:textColor="#006064"
+            android:textColor="@color/note_text"
             android:textSize="11sp"
             android:visibility="gone"
             tools:text="📍 -3.31438, 114.58959"

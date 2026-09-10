@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8F9FA">
+    android:background="@color/surface_soft">
 
     <!-- Header -->
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -20,7 +20,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Form OP Sungai"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/white"
             android:textSize="20sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
@@ -31,7 +31,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Bagian 3 dari 3: Isi Temuan Kondisi"
-            android:textColor="#E0E0E0"
+            android:textColor="@color/on_primary_muted"
             android:textSize="14sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvHeaderTitle" />
@@ -46,7 +46,7 @@
         android:orientation="horizontal"
         android:paddingHorizontal="16dp"
         android:paddingVertical="8dp"
-        android:background="#FFFFFF"
+        android:background="@color/surface"
         android:elevation="2dp"
         app:layout_constraintTop_toBottomOf="@id/layoutHeader">
 
@@ -96,7 +96,7 @@
                 android:layout_height="wrap_content"
                 android:text="Nama / Label Bangunan *"
                 android:textSize="12sp"
-                android:textColor="#666666" />
+                android:textColor="@color/text_body" />
 
             <EditText
                 android:id="@+id/etNamaBangunan"
@@ -116,7 +116,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:layout_marginTop="8dp"
-                android:background="#EEEEEE" />
+                android:background="@color/surface_medium" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -124,7 +124,7 @@
                 android:layout_marginTop="8dp"
                 android:text="Nama Sungai"
                 android:textSize="12sp"
-                android:textColor="#666666" />
+                android:textColor="@color/text_body" />
 
             <EditText
                 android:id="@+id/etNamaSungai"
@@ -144,7 +144,7 @@
                 android:layout_marginTop="6dp"
                 android:text="Ruas antara patok kilometer"
                 android:textSize="12sp"
-                android:textColor="#666666" />
+                android:textColor="@color/text_body" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -158,7 +158,7 @@
                     android:layout_height="wrap_content"
                     android:text="Km"
                     android:textSize="13sp"
-                    android:textColor="#666666" />
+                    android:textColor="@color/text_body" />
 
                 <EditText
                     android:id="@+id/etKmDari"
@@ -179,7 +179,7 @@
                     android:layout_marginStart="6dp"
                     android:text="s/d  Km"
                     android:textSize="13sp"
-                    android:textColor="#666666" />
+                    android:textColor="@color/text_body" />
 
                 <EditText
                     android:id="@+id/etKmSampai"
@@ -201,7 +201,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:layout_marginTop="8dp"
-                android:background="#EEEEEE" />
+                android:background="@color/surface_medium" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -232,7 +232,7 @@
                     android:layout_marginStart="6dp"
                     android:text="Lokasi belum diambil"
                     android:textSize="12sp"
-                    android:textColor="#666666" />
+                    android:textColor="@color/text_body" />
 
                 <Button
                     android:id="@+id/btnAmbilLokasi"
@@ -246,7 +246,7 @@
                     android:text="Ambil Lokasi"
                     android:textSize="12sp"
                     android:textAllCaps="false"
-                    android:textColor="#1B9CE6" />
+                    android:textColor="@color/primary_light" />
 
             </LinearLayout>
 
@@ -277,7 +277,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:padding="16dp"
-            android:background="#FFFFFF">
+            android:background="@color/surface">
 
             <Button
                 android:id="@+id/btnSimpanDraft3"
