@@ -207,7 +207,10 @@ class DetailLaporanActivity : AppCompatActivity() {
 
     private fun setupActionButtons(laporan: LaporanOpEntity) {
         val isDraft = laporan.sync_status == SyncStatus.DRAFT
-        val isDeletable = laporan.sync_status != SyncStatus.SYNCED && laporan.sync_status != SyncStatus.SYNCING
+        // SYNCING dikecualikan karena pengirimannya sedang berjalan. Laporan yang
+        // sudah terkirim boleh dihapus: salinannya ada di dinas, dan tanpa ini
+        // riwayat di HP menumpuk bertahun-tahun tanpa cara membersihkannya.
+        val isDeletable = laporan.sync_status != SyncStatus.SYNCING
 
         if (isDraft) {
             binding.tvDetailDeskripsi.visibility = View.VISIBLE
@@ -241,6 +244,8 @@ class DetailLaporanActivity : AppCompatActivity() {
                 SyncStatus.DRAFT -> "Konsep laporan ini akan dihapus permanen dari perangkat."
                 SyncStatus.LOCAL -> "Laporan ini belum tersinkronisasi. Data akan hilang permanen jika dihapus."
                 SyncStatus.FAILED -> "Laporan ini gagal disinkronisasi. Hapus dan buat ulang jika diperlukan."
+                SyncStatus.SYNCED -> "Laporan ini sudah tersimpan di dinas. Menghapusnya " +
+                    "di sini hanya membersihkan riwayat pada HP; data di dinas tetap utuh."
                 else -> "Hapus laporan ini dari perangkat?"
             }
             AlertDialog.Builder(this@DetailLaporanActivity)
