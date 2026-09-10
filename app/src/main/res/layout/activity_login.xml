@@ -1,76 +1,128 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Layar masuk juru sungai.
+
+    Yang sebelumnya berdiri di sini sebagai logo adalah ic_menu_gallery —
+    ikon galeri bawaan Android, penampung sementara yang tidak pernah
+    diganti. Kini memakai logo aplikasi yang sungguhan.
+
+    Logonya ic_launcher_foreground, berkas yang MEMANG SUDAH ikut di dalam
+    APK sebagai lapisan depan ikon peluncur. Menyalin logo lagi sebagai
+    berkas terpisah akan menambah puluhan kilobita untuk gambar yang persis
+    sama. Lapisan depan ikon adaptif punya ruang aman kosong di sekelilingnya,
+    kira-kira sepertiga di tiap sisi, jadi kotaknya sengaja dibesarkan agar
+    logo yang terlihat berukuran wajar.
+
+    Kop biru tua dan sudut membulatnya berupa shape XML, bukan gambar: satu
+    warna tidak perlu piksel, dan warnanya disamakan dengan kop dasbor supaya
+    layar pertama dan layar sehari-hari terasa satu aplikasi.
+
+    Seluruh tambahan berkas pada layar ini kurang dari dua kilobita.
+-->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:background="@color/background">
+    android:background="@color/background"
+    android:fillViewport="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="24dp">
+        android:layout_height="wrap_content">
 
-        <ImageView
-            android:id="@+id/imgLogo"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_marginTop="48dp"
-            android:contentDescription="@string/app_name"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@android:drawable/ic_menu_gallery" />
+        <!-- Kop -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/kop"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_kop_masuk"
+            android:paddingStart="24dp"
+            android:paddingTop="36dp"
+            android:paddingEnd="24dp"
+            android:paddingBottom="32dp"
+            app:layout_constraintTop_toTopOf="parent">
 
+            <ImageView
+                android:id="@+id/imgLogo"
+                android:layout_width="132dp"
+                android:layout_height="132dp"
+                android:contentDescription="@string/app_name"
+                android:src="@drawable/ic_launcher_foreground"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Sistem Informasi OP Sungai"
+                android:textColor="@color/white"
+                android:textSize="21sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/imgLogo" />
+
+            <TextView
+                android:id="@+id/tvSubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:alpha="0.85"
+                android:text="Dinas PUPR Provinsi Kalimantan Selatan"
+                android:textColor="@color/white"
+                android:textSize="13sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tvTitle" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Menyebut siapa yang masuk di sini. Aplikasi ini hanya untuk juru;
+             staf dinas memakai dasbor web, dan tanpa keterangan ini mereka
+             akan mencoba masuk memakai akun web lalu mengira sistemnya rusak. -->
         <TextView
-            android:id="@+id/tvTitle"
+            android:id="@+id/tvUntukJuru"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Sistem Pelaporan OP Sungai"
+            android:layout_marginTop="28dp"
+            android:text="Masuk sebagai juru sungai"
             android:textColor="@color/text_primary"
-            android:textSize="24sp"
+            android:textSize="15sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/imgLogo" />
-
-        <TextView
-            android:id="@+id/tvSubtitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Dinas PUPR Provinsi Kalimantan Selatan"
-            android:textColor="@color/text_secondary"
-            android:textSize="14sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvTitle" />
+            app:layout_constraintTop_toBottomOf="@+id/kop" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilUsername"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="24dp"
             android:hint="Username"
             android:textColorHint="@color/text_secondary"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvSubtitle"
-            app:startIconDrawable="@android:drawable/ic_menu_myplaces"
             app:boxStrokeColor="@color/text_hint"
             app:hintTextColor="@color/text_secondary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvUntukJuru"
+            app:startIconDrawable="@drawable/ic_pengguna"
             app:startIconTint="@color/text_secondary">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etUsername"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:autofillHints="username"
+                android:imeOptions="actionNext"
                 android:inputType="text"
-                android:textColor="@color/text_primary"
                 android:maxLines="1"
+                android:textColor="@color/text_primary"
                 android:textColorHint="@color/text_hint" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -79,25 +131,31 @@
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="14dp"
+            android:layout_marginEnd="24dp"
             android:hint="Password"
             android:textColorHint="@color/text_secondary"
+            app:boxStrokeColor="@color/text_hint"
+            app:endIconMode="password_toggle"
+            app:hintTextColor="@color/text_secondary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tilUsername"
-            app:endIconMode="password_toggle"
-            app:startIconDrawable="@android:drawable/ic_lock_idle_lock"
-            app:boxStrokeColor="@color/text_hint"
-            app:hintTextColor="@color/text_secondary"
+            app:startIconDrawable="@drawable/ic_gembok"
             app:startIconTint="@color/text_secondary">
 
+            <!-- actionDone supaya juru bisa langsung menekan tombol enter papan
+                 ketik alih-alih menutupnya dulu untuk mencapai tombol Masuk. -->
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etPassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:autofillHints="password"
+                android:imeOptions="actionDone"
                 android:inputType="textPassword"
-                android:textColor="@color/text_primary"
                 android:maxLines="1"
+                android:textColor="@color/text_primary"
                 android:textColorHint="@color/text_hint" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -105,27 +163,46 @@
             android:id="@+id/btnLogin"
             android:layout_width="0dp"
             android:layout_height="56dp"
-            android:layout_marginTop="32dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="28dp"
+            android:layout_marginEnd="24dp"
+            android:backgroundTint="@color/primary"
             android:text="Masuk"
             android:textColor="@color/white"
-            android:backgroundTint="@color/primary"
             android:textSize="16sp"
             android:textStyle="bold"
-            app:cornerRadius="8dp"
+            app:cornerRadius="10dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tilPassword" />
+
+        <!-- Versi aplikasi. Bukan hiasan: ketika juru menelepon dinas karena
+             ada yang tidak beres, pertanyaan pertama selalu "versi berapa yang
+             dipakai", dan ini satu-satunya layar yang pasti pernah ia lihat. -->
+        <TextView
+            android:id="@+id/tvVersi"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="24dp"
+            android:textColor="@color/text_hint"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnLogin"
+            app:layout_constraintVertical_bias="1" />
 
         <ProgressBar
             android:id="@+id/progressBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:visibility="gone"
             android:indeterminateTint="@color/primary"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/btnLogin"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="@+id/btnLogin" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

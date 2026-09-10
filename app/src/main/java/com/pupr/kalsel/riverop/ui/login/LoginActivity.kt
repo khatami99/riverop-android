@@ -4,7 +4,9 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.view.inputmethod.EditorInfo
 import android.widget.Toast
+import com.pupr.kalsel.riverop.BuildConfig
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.pupr.kalsel.riverop.MainActivity
@@ -59,13 +61,31 @@ class LoginActivity : AppCompatActivity() {
             }
         }
 
-        binding.btnLogin.setOnClickListener {
-            val username = binding.etUsername.text.toString().trim()
-            val password = binding.etPassword.text.toString().trim()
+        binding.btnLogin.setOnClickListener { cobaMasuk() }
 
-            if (validateInput(username, password)) {
-                viewModel.login(username, password)
+        // Papan ketik menutupi tombol Masuk di layar kecil, sehingga juru harus
+        // menutupnya dulu sebelum bisa menekan tombolnya. Tombol centang pada
+        // papan ketik itu sendiri kini mengerjakan hal yang sama.
+        binding.etPassword.setOnEditorActionListener { _, aksi, _ ->
+            if (aksi == EditorInfo.IME_ACTION_DONE) {
+                cobaMasuk()
+                true
+            } else {
+                false
             }
+        }
+
+        // Versi ditulis dari BuildConfig, bukan diketik di tata letak, supaya
+        // tidak pernah berbohong sesudah versinya naik.
+        binding.tvVersi.text = "Versi ${BuildConfig.VERSION_NAME}"
+    }
+
+    private fun cobaMasuk() {
+        val username = binding.etUsername.text.toString().trim()
+        val password = binding.etPassword.text.toString().trim()
+
+        if (validateInput(username, password)) {
+            viewModel.login(username, password)
         }
     }
 

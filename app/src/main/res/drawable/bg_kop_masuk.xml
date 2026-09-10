@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Latar kop halaman masuk.
+
+    Bentuk XML, bukan gambar: satu warna dengan sudut bawah membulat tidak
+    perlu piksel sama sekali, dan berkas ini di bawah setengah kilobita
+    berapa pun kepadatan layarnya.
+
+    Warnanya sama dengan kop dasbor supaya layar pertama yang dilihat juru
+    dan layar yang ia pakai sehari-hari terasa satu aplikasi.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <solid android:color="@color/primary" />
+
+    <corners
+        android:bottomLeftRadius="28dp"
+        android:bottomRightRadius="28dp" />
+</shape>
