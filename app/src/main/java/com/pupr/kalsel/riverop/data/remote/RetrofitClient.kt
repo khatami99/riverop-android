@@ -8,17 +8,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
-
-    /**
-     * Alamat server datang dari build, bukan dari baris ini.
-     *
-     * Build debug memakai 127.0.0.1 lewat kabel USB ("adb reverse tcp:8000
-     * tcp:8000"); build rilis memakai alamat dinas yang wajib https. Keduanya
-     * diatur di app/build.gradle.kts dan diisi lewat local.properties.
-     *
-     * Dulu alamatnya ditulis di sini dan diganti-ganti tiap pindah wifi, yang
-     * berarti berkas ini tidak pernah boleh ikut ke git.
-     */
+    // Jangan diubah di sini. Alamatnya diatur di app/build.gradle.kts,
+    // diisi lewat local.properties, dan berbeda antara debug dan rilis.
     private var baseUrl: String = BuildConfig.BASE_URL
 
     private var retrofit: Retrofit? = null
