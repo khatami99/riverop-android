@@ -1,8 +1,12 @@
 package com.pupr.kalsel.riverop.ui.dashboard
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.View
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -18,6 +22,8 @@ import com.pupr.kalsel.riverop.models.SyncStatus
 import com.pupr.kalsel.riverop.ui.laporan.BuatLaporanActivity
 import com.pupr.kalsel.riverop.ui.login.LoginActivity
 import com.pupr.kalsel.riverop.ui.laporan.DetailLaporanActivity
+import androidx.core.content.ContextCompat
+import com.pupr.kalsel.riverop.utils.KabarSinkronisasi
 import com.pupr.kalsel.riverop.utils.PrefsHelper
 import com.pupr.kalsel.riverop.utils.SessionManager
 import com.google.gson.Gson
@@ -36,6 +42,9 @@ class DashboardActivity : AppCompatActivity() {
     private lateinit var binding: ActivityDashboardBinding
     private lateinit var adapter: LaporanAdapter
     private lateinit var repository: LaporanRepository
+
+    private val mintaIzinNotifikasi =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,6 +65,9 @@ class DashboardActivity : AppCompatActivity() {
 
         val database = RiverOpDatabase.getDatabase(this)
         repository = LaporanRepository(database)
+
+        KabarSinkronisasi.siapkanSaluran(this)
+        tanyakanIzinNotifikasi()
 
         setupRecyclerView()
         observeLaporan()
@@ -162,6 +174,34 @@ class DashboardActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    /**
+     * Meminta izin notifikasi sekali saja, tidak berulang tiap membuka layar.
+     *
+     * Menanyakannya lagi dan lagi tidak menambah peluang diizinkan — sesudah
+     * dua kali ditolak sistem sendiri berhenti menampilkan permintaannya —
+     * tetapi berhasil membuat aplikasi terasa memaksa. Yang menolak tetap
+     * bisa menyalakannya belakangan dari setelan Android.
+     *
+     * Ditanyakan di sini, bukan saat memasang, sebab pada layar inilah juru
+     * pertama kali melihat antrean laporannya, sehingga permintaannya punya
+     * kaitan yang jelas dengan apa yang sedang dilihatnya.
+     */
+    private fun tanyakanIzinNotifikasi() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+
+        val sudah = ContextCompat.checkSelfPermission(
+            this, Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (sudah) return
+
+        val prefs = PrefsHelper.get(this)
+        if (prefs.getBoolean("izin_notifikasi_pernah_diminta", false)) return
+
+        prefs.edit().putBoolean("izin_notifikasi_pernah_diminta", true).apply()
+        mintaIzinNotifikasi.launch(Manifest.permission.POST_NOTIFICATIONS)
     }
 
     private fun scheduleSyncWorker() {

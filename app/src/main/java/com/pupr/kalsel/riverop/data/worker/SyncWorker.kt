@@ -12,6 +12,7 @@ import com.pupr.kalsel.riverop.data.remote.RetrofitClient
 import com.pupr.kalsel.riverop.data.remote.StatusSinkronisasiRequest
 import com.pupr.kalsel.riverop.data.repository.LaporanRepository
 import com.pupr.kalsel.riverop.models.SyncStatus
+import com.pupr.kalsel.riverop.utils.KabarSinkronisasi
 import com.pupr.kalsel.riverop.utils.PrefsHelper
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -41,6 +42,12 @@ class SyncWorker(
             }
 
             var hasFailure = false
+
+            // Dihitung, bukan disimpulkan dari hasil akhir: sebagian laporan
+            // bisa terkirim sementara sebagian lain gagal, dan juru berhak
+            // tahu persis berapa yang mana.
+            var jumlahTerkirim = 0
+            var jumlahGagal = 0
 
             for (laporan in pending) {
                 try {
@@ -112,10 +119,12 @@ class SyncWorker(
                         response.isSuccessful -> {
                             repo.updateSyncStatus(laporan.uuid, SyncStatus.SYNCED)
                             deleteLocalPhotos(laporan, itemInspeksi, temuanLocalPaths)
+                            jumlahTerkirim++
                         }
                         else -> {
                             repo.updateSyncStatus(laporan.uuid, SyncStatus.FAILED)
                             hasFailure = true
+                            jumlahGagal++
                         }
                     }
 
@@ -123,10 +132,26 @@ class SyncWorker(
                     android.util.Log.e("SyncWorker", "Error sync laporan ${laporan.uuid}: ${e.message}", e)
                     repo.updateSyncStatus(laporan.uuid, SyncStatus.FAILED)
                     hasFailure = true
+                    jumlahGagal++
                 }
             }
 
             laporStatus(repo, token, if (hasFailure) "Sebagian laporan gagal terkirim" else null)
+
+            // Berkabar hanya bila memang ada yang dikerjakan. Pekerja ini
+            // berjalan tiap lima belas menit, dan kabar "tidak ada apa-apa"
+            // sembilan puluh enam kali sehari akan membuat juru mematikan
+            // seluruh notifikasi aplikasi ini.
+            KabarSinkronisasi.berhasil(applicationContext, jumlahTerkirim)
+
+            if (jumlahGagal > 0) {
+                KabarSinkronisasi.gagal(applicationContext, jumlahGagal)
+            } else {
+                // Antrean sudah bersih, jadi kabar gagal dari percobaan
+                // sebelumnya harus ikut ditarik — bukan dibiarkan menggantung
+                // menyatakan sesuatu yang tidak lagi benar.
+                KabarSinkronisasi.bersihkanGagal(applicationContext)
+            }
 
             if (hasFailure) Result.retry() else Result.success()
 
