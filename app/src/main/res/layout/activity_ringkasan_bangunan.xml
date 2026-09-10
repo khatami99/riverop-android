@@ -73,7 +73,7 @@
                             android:layout_height="wrap_content"
                             android:layout_alignParentEnd="true"
                             android:layout_centerVertical="true"
-                            android:text="Edit Info" />
+                            android:text="Ubah Info" />
 
                     </RelativeLayout>
 

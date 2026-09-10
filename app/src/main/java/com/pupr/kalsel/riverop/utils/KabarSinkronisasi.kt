@@ -101,7 +101,7 @@ object KabarSinkronisasi {
             context,
             ID_BERHASIL,
             "Laporan terkirim",
-            "$jumlah laporan sudah sampai ke dinas."
+            "$jumlah laporan telah sampai ke dinas."
         )
     }
 
@@ -112,8 +112,8 @@ object KabarSinkronisasi {
             context,
             ID_GAGAL,
             "Laporan belum terkirim",
-            "$jumlah laporan masih tertahan di HP ini. Akan dicoba lagi sendiri " +
-                "begitu ada jaringan — datanya tidak hilang."
+            "$jumlah laporan masih tertahan pada perangkat ini. Pengiriman akan " +
+                "diulang secara otomatis begitu jaringan tersedia. Data tidak hilang."
         )
     }
 
@@ -147,10 +147,10 @@ object KabarSinkronisasi {
         tampilkan(
             context,
             ID_SESI,
-            "Perlu masuk ulang",
-            "Sesi di HP ini sudah tidak berlaku, jadi laporan tidak bisa dikirim " +
-                "ke dinas. Ketuk untuk masuk lagi — laporan yang sudah dicatat " +
-                "tetap aman dan akan terkirim sesudahnya.",
+            "Perlu masuk kembali",
+            "Sesi pada perangkat ini sudah tidak berlaku, sehingga laporan tidak " +
+                "dapat dikirim ke dinas. Ketuk untuk masuk kembali. Laporan yang " +
+                "sudah dicatat tetap tersimpan dan akan terkirim sesudahnya.",
             SALURAN_SESI,
             Intent(context, LoginActivity::class.java)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)

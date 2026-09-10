@@ -56,7 +56,7 @@ class LoginActivity : AppCompatActivity() {
                 }
                 is LoginState.Success -> {
                     showLoading(false)
-                    Toast.makeText(this, "Login Berhasil", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Berhasil masuk.", Toast.LENGTH_SHORT).show()
                     val intent = Intent(this, DashboardActivity::class.java)
                     startActivity(intent)
                     finish()
@@ -122,7 +122,8 @@ class LoginActivity : AppCompatActivity() {
         val masuk = prefs.getLong("login_timestamp", 0L)
         if (masuk > 0L && System.currentTimeMillis() - masuk > SESSION_DURATION_MS) {
             SesiJuru.bersihkan(this)
-            tampilkanAlasan("Sesi 30 hari sudah habis. Masuk lagi ya — laporan yang belum terkirim tetap aman.")
+            tampilkanAlasan("Masa berlaku sesi 30 hari telah berakhir. Silakan masuk kembali. "
+                    + "Laporan yang belum terkirim tetap tersimpan.")
             return
         }
 
@@ -142,8 +143,8 @@ class LoginActivity : AppCompatActivity() {
                 SesiJuru.bersihkan(this@LoginActivity)
                 tampilkanPemeriksaan(false)
                 tampilkanAlasan(
-                    "Sesi di HP ini sudah tidak berlaku. Masuk lagi ya — kalau tetap " +
-                        "ditolak, hubungi petugas dinas."
+                    "Sesi pada perangkat ini sudah tidak berlaku. Silakan masuk kembali. "
+                    + "Apabila tetap ditolak, hubungi petugas dinas."
                 )
             } else {
                 keDasbor()
@@ -180,14 +181,14 @@ class LoginActivity : AppCompatActivity() {
         var isValid = true
 
         if (username.isEmpty()) {
-            binding.tilUsername.error = "Username tidak boleh kosong"
+            binding.tilUsername.error = "Nama pengguna wajib diisi."
             isValid = false
         } else {
             binding.tilUsername.error = null
         }
 
         if (password.isEmpty()) {
-            binding.tilPassword.error = "Password tidak boleh kosong"
+            binding.tilPassword.error = "Kata sandi wajib diisi."
             isValid = false
         } else {
             binding.tilPassword.error = null

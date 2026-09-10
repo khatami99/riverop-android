@@ -30,7 +30,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                         syncMasterData(body.token, body.user.das_id)
                         _loginState.postValue(LoginState.Success(body))
                     } else {
-                        _loginState.postValue(LoginState.Error("Respons kosong dari server"))
+                        _loginState.postValue(LoginState.Error("Server tidak mengirimkan jawaban."))
                     }
                 } else {
                     val errorMsg = try {
@@ -38,12 +38,12 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                         val json = JSONObject(errorBody ?: "")
                         json.getString("message")
                     } catch (e: Exception) {
-                        "Login gagal (${response.code()})"
+                        "Gagal masuk (${response.code()})."
                     }
                     _loginState.postValue(LoginState.Error(errorMsg))
                 }
             } catch (e: Exception) {
-                _loginState.postValue(LoginState.Error("Koneksi gagal: ${e.localizedMessage}"))
+                _loginState.postValue(LoginState.Error("Gagal terhubung ke server: ${e.localizedMessage}"))
             }
         }
     }

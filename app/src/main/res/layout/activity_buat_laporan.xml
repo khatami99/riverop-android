@@ -124,7 +124,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:hint="Tulis catatan peninjauan di sini..."
+            android:hint="Tuliskan catatan peninjauan di sini"
             app:layout_constraintTop_toBottomOf="@id/lblCatatan"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
@@ -159,7 +159,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:hint="Tulis kendala yang dihadapi (bila ada)..."
+            android:hint="Tuliskan kendala yang dihadapi, bila ada"
             app:layout_constraintTop_toBottomOf="@id/lblKendala"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">

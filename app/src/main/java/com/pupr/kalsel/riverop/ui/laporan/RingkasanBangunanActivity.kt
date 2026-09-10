@@ -42,7 +42,7 @@ class RingkasanBangunanActivity : AppCompatActivity() {
 
         laporanUuid = intent.getStringExtra("EXTRA_LAPORAN_UUID")
         if (laporanUuid.isNullOrBlank()) {
-            Toast.makeText(this, "Laporan tidak ditemukan", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Laporan tidak ditemukan.", Toast.LENGTH_SHORT).show()
             finish()
             return
         }
@@ -82,16 +82,16 @@ class RingkasanBangunanActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 val laporan = repository.getLaporanByUuid(uuid)
                 if (laporan == null) {
-                    Toast.makeText(this@RingkasanBangunanActivity, "Laporan tidak ditemukan", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@RingkasanBangunanActivity, "Laporan tidak ditemukan.", Toast.LENGTH_SHORT).show()
                     return@launch
                 }
                 val items = repository.getItemInspeksiByLaporan(uuid)
                 if (items.isEmpty()) {
-                    Toast.makeText(this@RingkasanBangunanActivity, "Minimal harus ada 1 bangunan yang diinspeksi", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@RingkasanBangunanActivity, "Sekurang-kurangnya satu bangunan harus diperiksa.", Toast.LENGTH_SHORT).show()
                     return@launch
                 }
                 repository.updateLaporan(laporan.copy(sync_status = SyncStatus.LOCAL))
-                Toast.makeText(this@RingkasanBangunanActivity, "Laporan siap disinkronisasi", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@RingkasanBangunanActivity, "Laporan siap disinkronkan.", Toast.LENGTH_SHORT).show()
                 startActivity(Intent(this@RingkasanBangunanActivity, DashboardActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
                 })

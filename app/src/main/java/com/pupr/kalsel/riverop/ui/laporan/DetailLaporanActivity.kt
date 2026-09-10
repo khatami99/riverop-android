@@ -70,7 +70,7 @@ class DetailLaporanActivity : AppCompatActivity() {
 
         laporanUuid = intent.getStringExtra("EXTRA_LAPORAN_UUID")
         if (laporanUuid.isNullOrBlank()) {
-            Toast.makeText(this, "Laporan tidak ditemukan", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Laporan tidak ditemukan.", Toast.LENGTH_SHORT).show()
             finish()
             return
         }
@@ -91,7 +91,7 @@ class DetailLaporanActivity : AppCompatActivity() {
 
             val laporan = repository.getLaporanByUuid(uuid)
             if (laporan == null) {
-                Toast.makeText(this@DetailLaporanActivity, "Gagal memuat detail laporan", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@DetailLaporanActivity, "Detail laporan gagal dimuat.", Toast.LENGTH_SHORT).show()
                 finish()
                 return@launch
             }
@@ -238,7 +238,7 @@ class DetailLaporanActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val laporan = repository.getLaporanByUuid(uuid) ?: return@launch
             val pesan = when (laporan.sync_status) {
-                SyncStatus.DRAFT -> "Laporan draft ini akan dihapus permanen dari perangkat."
+                SyncStatus.DRAFT -> "Konsep laporan ini akan dihapus permanen dari perangkat."
                 SyncStatus.LOCAL -> "Laporan ini belum tersinkronisasi. Data akan hilang permanen jika dihapus."
                 SyncStatus.FAILED -> "Laporan ini gagal disinkronisasi. Hapus dan buat ulang jika diperlukan."
                 else -> "Hapus laporan ini dari perangkat?"
@@ -263,14 +263,14 @@ class DetailLaporanActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 repository.deleteLaporan(uuid)
-                Toast.makeText(this@DetailLaporanActivity, "Laporan berhasil dihapus", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@DetailLaporanActivity, "Laporan berhasil dihapus.", Toast.LENGTH_SHORT).show()
                 val intent = Intent(this@DetailLaporanActivity, DashboardActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
                 }
                 startActivity(intent)
                 finish()
             } catch (e: Exception) {
-                Toast.makeText(this@DetailLaporanActivity, "Gagal menghapus laporan", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@DetailLaporanActivity, "Laporan gagal dihapus.", Toast.LENGTH_SHORT).show()
             }
         }
     }

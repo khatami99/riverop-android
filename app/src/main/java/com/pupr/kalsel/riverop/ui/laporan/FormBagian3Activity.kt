@@ -117,7 +117,7 @@ class FormBagian3Activity : AppCompatActivity() {
 
         binding.btnSimpanDraft3.setOnClickListener {
             if (binding.etNamaBangunan.text.toString().isBlank()) {
-                Toast.makeText(this, "Nama bangunan wajib diisi", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Nama bangunan wajib diisi.", Toast.LENGTH_SHORT).show()
                 binding.etNamaBangunan.requestFocus()
                 return@setOnClickListener
             }
@@ -185,7 +185,7 @@ class FormBagian3Activity : AppCompatActivity() {
         val bagianList = loadBagianBangunanForJenis(jenisBangunanId)
 
         if (bagianList.isEmpty()) {
-            Toast.makeText(this, "Data master bagian bangunan tidak ditemukan. Silakan sync data master dulu.", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Data master bagian bangunan tidak ditemukan. Silakan sinkronkan data master terlebih dahulu.", Toast.LENGTH_LONG).show()
             finish()
             return
         }
@@ -281,13 +281,13 @@ class FormBagian3Activity : AppCompatActivity() {
             }
             adapter.notifyItemChanged(activePosition)
         } else {
-            Toast.makeText(this, "Gagal memproses gambar", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Gambar gagal diproses.", Toast.LENGTH_SHORT).show()
         }
     }
 
     private fun validateInputs(): Boolean {
         if (binding.etNamaBangunan.text.toString().isBlank()) {
-            Toast.makeText(this, "Nama bangunan wajib diisi", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Nama bangunan wajib diisi.", Toast.LENGTH_SHORT).show()
             binding.etNamaBangunan.requestFocus()
             return false
         }
@@ -343,7 +343,7 @@ class FormBagian3Activity : AppCompatActivity() {
         binding.pbLokasi.visibility = View.VISIBLE
         binding.tvIkonLokasi.visibility = View.GONE
         binding.btnAmbilLokasi.isEnabled = false
-        binding.tvStatusLokasi.text = "Mencari lokasi..."
+        binding.tvStatusLokasi.text = "Sedang mencari lokasi…"
         binding.tvStatusLokasi.setTextColor(ContextCompat.getColor(this, R.color.text_secondary))
 
         lifecycleScope.launch {
@@ -531,7 +531,7 @@ class FormBagian3Activity : AppCompatActivity() {
                     })
                     finish()
                 } else {
-                    val message = if (targetStatus == SyncStatus.DRAFT) "Draft berhasil disimpan" else "Laporan berhasil disimpan"
+                    val message = if (targetStatus == SyncStatus.DRAFT) "Konsep berhasil disimpan." else "Laporan berhasil disimpan."
                     Toast.makeText(this@FormBagian3Activity, message, Toast.LENGTH_SHORT).show()
                     if (isEditItemMode) {
                         finish()

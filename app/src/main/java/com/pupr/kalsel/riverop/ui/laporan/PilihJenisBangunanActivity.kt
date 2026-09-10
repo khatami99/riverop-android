@@ -58,7 +58,7 @@ class PilihJenisBangunanActivity : AppCompatActivity() {
         binding.btnLanjut.setOnClickListener {
             val selected = adapter.getSelectedItem()
             if (selected == null) {
-                Toast.makeText(this, "Silakan pilih salah satu jenis bangunan", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Silakan pilih salah satu jenis bangunan.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 

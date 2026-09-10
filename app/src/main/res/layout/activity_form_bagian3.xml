@@ -19,7 +19,7 @@
             android:id="@+id/tvHeaderTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Form OP Sungai"
+            android:text="Formulir OP Sungai"
             android:textColor="@color/white"
             android:textSize="20sp"
             android:textStyle="bold"
@@ -286,7 +286,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginEnd="8dp"
-                android:text="Simpan Draft" />
+                android:text="Simpan Konsep" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnTambahBangunan"
@@ -302,7 +302,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginStart="8dp"
-                android:text="Simpan &amp; Sync" />
+                android:text="Simpan &amp; Kirim" />
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>

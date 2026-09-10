@@ -120,7 +120,7 @@ class BuatLaporanActivity : AppCompatActivity() {
         val uuid = existingLaporanUuid ?: return
 
         if (pathFoto1 == null) {
-            Toast.makeText(this, "Foto lokasi 1 wajib diisi", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Foto lokasi 1 wajib diisi.", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -148,7 +148,7 @@ class BuatLaporanActivity : AppCompatActivity() {
                     foto_lokasi_2 = pathFoto2
                 )
             )
-            Toast.makeText(this@BuatLaporanActivity, "Info laporan diperbarui", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this@BuatLaporanActivity, "Informasi laporan telah diperbarui.", Toast.LENGTH_SHORT).show()
             finish()
         }
     }
@@ -202,7 +202,7 @@ class BuatLaporanActivity : AppCompatActivity() {
                 binding.btnHapusFoto2.visibility = android.view.View.VISIBLE
             }
         } else {
-            Toast.makeText(this, "Gagal memproses gambar", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Gambar gagal diproses.", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -216,7 +216,7 @@ class BuatLaporanActivity : AppCompatActivity() {
         val kendala = binding.etKendala.text.toString().trim()
 
         if (pathFoto1 == null) {
-            Toast.makeText(this, "Foto lokasi 1 wajib diisi", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Foto lokasi 1 wajib diisi.", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -233,7 +233,7 @@ class BuatLaporanActivity : AppCompatActivity() {
         }
 
         if (juruSungaiId == 0 || dasId == 0) {
-            Toast.makeText(this, "Sesi login tidak valid", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Sesi masuk tidak sah.", Toast.LENGTH_SHORT).show()
             return
         }
 

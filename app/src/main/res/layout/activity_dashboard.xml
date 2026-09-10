@@ -24,7 +24,7 @@
         android:background="?attr/selectableItemBackgroundBorderless"
         android:src="@drawable/ic_logout"
         android:tint="@color/white"
-        android:contentDescription="Logout"
+        android:contentDescription="Keluar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -123,7 +123,7 @@
                 style="@style/Widget.MaterialComponents.Button.TextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Sync Sekarang"
+                android:text="Sinkronkan Sekarang"
                 android:textColor="@color/primary"
                 android:textSize="14sp"
                 android:textStyle="bold"

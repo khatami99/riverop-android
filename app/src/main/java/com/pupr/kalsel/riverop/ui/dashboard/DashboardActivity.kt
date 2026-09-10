@@ -90,7 +90,10 @@ class DashboardActivity : AppCompatActivity() {
         // beserta alasannya. Tanpa alasan, ia cuma melihat dirinya terlempar ke
         // layar masuk tanpa sebab dan akan mengira aplikasinya rusak.
         SessionManager.onUnauthorized = {
-            performLogout("Sesi di HP ini sudah tidak berlaku. Masuk lagi ya — kalau tetap ditolak, hubungi petugas dinas.")
+            performLogout(
+                "Sesi pada perangkat ini sudah tidak berlaku. Silakan masuk kembali. " +
+                    "Apabila tetap ditolak, hubungi petugas dinas."
+            )
         }
     }
 
@@ -253,11 +256,11 @@ class DashboardActivity : AppCompatActivity() {
                 if (workInfo.state == WorkInfo.State.RUNNING) {
                     binding.pbSync.visibility = View.VISIBLE
                     binding.btnSync.isEnabled = false
-                    binding.btnSync.text = "Menyinkronkan..."
+                    binding.btnSync.text = "Sedang menyinkronkan…"
                 } else {
                     binding.pbSync.visibility = View.GONE
                     binding.btnSync.isEnabled = true
-                    binding.btnSync.text = "Sync Sekarang"
+                    binding.btnSync.text = "Sinkronkan Sekarang"
                 }
             }
     }
@@ -265,7 +268,7 @@ class DashboardActivity : AppCompatActivity() {
     private fun showLogoutConfirmationDialog() {
         AlertDialog.Builder(this)
             .setTitle("Keluar")
-            .setMessage("Yakin ingin keluar?")
+            .setMessage("Apakah Anda yakin ingin keluar?")
             .setPositiveButton("Ya") { dialog, _ ->
                 dialog.dismiss()
                 performLogout()
