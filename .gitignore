@@ -13,3 +13,10 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Kunci penanda tangan APK rilis. TIDAK BOLEH masuk repositori:
+# siapa pun yang memegangnya dapat menerbitkan pembaruan palsu
+# atas nama aplikasi ini.
+keystore.properties
+*.jks
+*.keystore

@@ -24,6 +24,32 @@ fun alamatServer(kunci: String): String? {
     return isi.getProperty(kunci)?.trim()?.takeIf { it.isNotEmpty() }
 }
 
+/**
+ * Kunci penanda tangan APK rilis.
+ *
+ * Android menolak memasang APK yang tidak bertanda tangan. Sampai berkas ini
+ * ada, `assembleRelease` menghasilkan APK yang TIDAK BISA DIPASANG SIAPA PUN —
+ * aplikasi ini hanya hidup lewat kabel USB dari satu laptop.
+ *
+ * Kuncinya dibaca dari keystore.properties, yang diabaikan git dan tidak
+ * pernah ikut terkirim. Ini bukan kerapian belaka: siapa pun yang memegang
+ * berkas kunci beserta sandinya dapat menerbitkan pembaruan palsu atas nama
+ * aplikasi ini, dan HP juru akan menerimanya tanpa curiga.
+ *
+ * YANG HARUS DIKETAHUI PEMILIKNYA: kunci ini dibuat sekali dan tidak dapat
+ * dibuat ulang. Bila berkasnya hilang atau sandinya lupa, aplikasi yang sudah
+ * terpasang di HP juru TIDAK AKAN PERNAH BISA DIPERBARUI lagi — satu-satunya
+ * jalan adalah mencopot lalu memasang ulang, dan laporan yang belum terkirim
+ * ikut hilang bersamanya. Simpan salinannya di tempat terpisah.
+ */
+fun rahasiaKunci(): Properties? {
+    val berkas = rootProject.file("keystore.properties")
+    if (!berkas.exists()) return null
+    val isi = Properties()
+    berkas.inputStream().use { isi.load(it) }
+    return isi
+}
+
 android {
     namespace = "com.pupr.kalsel.riverop"
     compileSdk {
@@ -40,6 +66,18 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        create("rilis") {
+            val rahasia = rahasiaKunci()
+            if (rahasia != null) {
+                storeFile = rootProject.file(rahasia.getProperty("storeFile"))
+                storePassword = rahasia.getProperty("storePassword")
+                keyAlias = rahasia.getProperty("keyAlias")
+                keyPassword = rahasia.getProperty("keyPassword")
+            }
+        }
     }
 
     buildTypes {
@@ -76,6 +114,37 @@ android {
             // karena alamat produksi belum ada — padahal memang belum waktunya.
             val sedangRilis = gradle.startParameter.taskNames
                 .any { it.contains("Release", ignoreCase = true) }
+
+            // Tanda tangan diperiksa bersama alamat, dan dengan alasan yang
+            // sama: keduanya hanya ketahuan salah pada saat APK-nya sudah
+            // dibagikan, ketika memperbaikinya berarti membagikan ulang.
+            val rahasia = rahasiaKunci()
+
+            if (sedangRilis && rahasia == null) {
+                throw GradleException(
+                    """
+                    keystore.properties belum ada, sehingga APK rilis tidak akan
+                    bertanda tangan dan ditolak Android saat dipasang.
+
+                    1. Buat kuncinya sekali saja, dari akar proyek:
+                       keytool -genkeypair -v -keystore riverop-rilis.jks -alias riverop -keyalg RSA -keysize 2048 -validity 10000
+
+                    2. Buat keystore.properties di akar proyek:
+                       storeFile=riverop-rilis.jks
+                       storePassword=SANDI-YANG-TADI-DIBUAT
+                       keyAlias=riverop
+                       keyPassword=SANDI-YANG-TADI-DIBUAT
+
+                    Kedua berkas itu diabaikan git. Simpan salinannya di tempat
+                    lain: kunci yang hilang berarti aplikasi ini tidak akan
+                    pernah bisa diperbarui lagi di HP yang sudah memasangnya.
+                    """.trimIndent()
+                )
+            }
+
+            if (rahasia != null) {
+                signingConfig = signingConfigs.getByName("rilis")
+            }
 
             val alamat = alamatServer("riverop.baseUrl.release")
 
