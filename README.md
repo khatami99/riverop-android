@@ -1,191 +1,206 @@
-# Aplikasi OP Sungai — PUPR Kalimantan Selatan
+# Aplikasi Juru Sungai — Sistem Informasi OP Sungai
 
-Aplikasi Android offline-first untuk digitalisasi laporan inspeksi Operasi dan Pemeliharaan (OP) sungai oleh juru sungai di bawah Dinas PUPR Provinsi Kalimantan Selatan.
+Aplikasi Android *offline-first* untuk juru sungai Dinas PUPR Provinsi
+Kalimantan Selatan. Menggantikan blangko kertas OP yang selama ini diisi di
+lapangan, difoto, lalu dikirim ke kantor secara terpisah.
+
+Bagian kedua dari sistem ini adalah dasbor web di repositori
+[`khatami99/river-op`](https://github.com/khatami99/river-op), yang sekaligus
+menjadi servernya.
 
 ---
 
-## Latar Belakang
+## Prinsip yang menentukan bentuk aplikasi ini
 
-Proses pelaporan inspeksi sungai selama ini dilakukan secara manual menggunakan formulir kertas (blangko), kemudian difoto dan dikirim ke kantor secara terpisah. Aplikasi ini menggantikan proses tersebut dengan sistem digital yang tetap bisa digunakan di lapangan tanpa koneksi internet, dan menyinkronkan data ke server secara otomatis saat koneksi tersedia.
+**Seringan mungkin, tetapi tetap berfungsi.** Juru bekerja di tepi sungai
+dengan HP kelas bawah dan sinyal yang sering hilang.
 
-## Fitur Utama
+**Tidak ada satu pun pekerjaan lapangan yang boleh hilang.** Laporan ditulis ke
+basis data di HP lebih dahulu, dan baru dikirim kemudian. Jaringan yang mati,
+aplikasi yang tertutup, atau HP yang kehabisan daya tidak menghapus apa pun.
 
-- **Offline-first** — data tersimpan di perangkat terlebih dahulu, sync otomatis saat ada koneksi internet
-- **14 jenis bangunan** — mendukung OP-01.a hingga OP-01.n sesuai blangko resmi PUPR
-- **Dokumentasi foto** — hingga 3 foto per bagian temuan, wajib minimal 1 foto termasuk untuk kondisi Normal
-- **Status laporan** — DRAFT → LOCAL → SYNCED / FAILED, dengan indikator jelas di dashboard
-- **Edit laporan draft** — juru bisa memperbaiki info umum dan kondisi per bangunan sebelum dikirim
-- **Multi-bangunan per kunjungan** — 1 laporan kunjungan bisa mencakup beberapa bangunan berbeda
-- **Kompresi foto otomatis** — resize maksimal 1280px dan target ukuran di bawah 300KB sebelum diunggah
-- **Sinkronisasi otomatis** — berjalan di background via WorkManager, periodik setiap 15 menit dan bisa dipicu manual
+**Diam adalah kegagalan.** Kalau ada yang tidak beres, juru harus diberi tahu.
+Laporan yang tertahan, sesi yang berakhir, dan server yang tidak terjangkau
+masing-masing punya pesannya sendiri.
 
-## Tech Stack
+---
 
-### Android
-| Komponen | Library |
+## Fitur
+
+- **Bekerja tanpa jaringan.** Seluruh laporan tersimpan di HP; pengiriman
+  berjalan sendiri di latar tiap 15 menit begitu ada jaringan.
+- **14 jenis bangunan**, OP-01.a sampai OP-01.n, mengikuti blangko resmi PUPR.
+  Daftar bagian bangunan diambil dari master data server, bukan ditulis di kode.
+- **Foto sampai 3 per temuan**, dikecilkan sendiri ke maksimal 1280 px dan di
+  bawah 300 KB sebelum dikirim.
+- **Titik GPS per bangunan**, beserta ketelitiannya, dan bisa diulang bila gagal.
+- **Beberapa bangunan dalam satu kunjungan**, dan tiap bangunan bisa diubah
+  kembali selama laporannya belum terkirim.
+- **Kabar hasil pengiriman** lewat notifikasi — berhasil, tertahan, atau sesi
+  perlu diperbarui.
+- **Uji koneksi server** dari layar masuk, membedakan empat keadaan yang
+  penanganannya berbeda.
+
+---
+
+## Susunan data
+
+```
+laporan_op              satu kunjungan inspeksi
+  └── item_inspeksi     satu per bangunan yang diperiksa
+        └── temuan_kondisi   satu per bagian bangunan
+```
+
+Keadaan sebuah laporan: `DRAFT` → `LOCAL` → `SYNCING` → `SYNCED`, atau `FAILED`
+bila ditolak server. Hanya `LOCAL` dan `FAILED` yang dijemput pekerja
+sinkronisasi; `DRAFT` tidak pernah terkirim sampai juru menyelesaikannya.
+
+---
+
+## Teknologi
+
+| | |
 |---|---|
 | Bahasa | Kotlin |
-| Database lokal | Room (SQLite) |
-| HTTP client | Retrofit + OkHttp |
-| Background sync | WorkManager |
-| Image loading | Glide |
-| UI | ViewBinding + Material Components |
+| Basis data lokal | Room (SQLite) |
+| Jaringan | Retrofit + OkHttp |
+| Pekerja latar | WorkManager |
+| Gambar | Glide |
+| Tampilan | ViewBinding + Material Components |
+| Minimal | Android 8.0 (API 26) |
 
-### Backend
-| Komponen | Teknologi |
-|---|---|
-| Framework | Laravel 12 |
-| Database | MySQL |
-| Auth | Laravel Sanctum |
-| Dev environment | Laragon |
+---
 
-## Struktur Data
+## Menjalankan untuk pengembangan
 
-Hierarki data mengikuti struktur form inspeksi resmi:
+### Yang diperlukan
 
-```
-laporan_op              → 1 kunjungan inspeksi
-  └── item_inspeksi     → 1 per jenis bangunan yang diperiksa
-        └── temuan_kondisi  → 1 per bagian bangunan
-```
+- Android Studio
+- Server dari repositori `river-op` yang sedang berjalan
+- HP Android 8.0+ dengan *USB debugging* menyala
 
-## Cara Menjalankan (Development)
+### Lewat kabel USB — cara yang disarankan
 
-### Prasyarat
-- Android Studio Hedgehog atau lebih baru
-- PHP 8.2+, Composer
-- Laragon (MySQL)
-- Device Android API 26+
-
-### Setup Backend
+Alamat server **tidak ditulis di dalam kode**. Build debug menunjuk
+`http://127.0.0.1:8000/`, yang lewat kabel berarti laptopmu sendiri.
 
 ```bash
-cd river-op-api
-cp .env.example .env
-composer install
-php artisan key:generate
-php artisan migrate
-php artisan db:seed
-php artisan serve --host=0.0.0.0 --port=8000
+adb reverse tcp:8000 tcp:8000    # diulang tiap kabel dicabut
+php artisan serve                # di repositori river-op
 ```
 
-Isi `.env`:
-```env
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=river_op_db
-DB_USERNAME=root
-DB_PASSWORD=
-```
+Lalu jalankan aplikasinya dari Android Studio.
 
-### Setup Android
+**Kenapa kabel, bukan wifi?** Banyak router — termasuk bawaan ISP dan jaringan
+tamu — menyalakan *AP Isolation*, yang melarang perangkat pada wifi yang sama
+saling menghubungi. Gejalanya menyesatkan: IP benar, satu jaringan, tetapi
+`ping` pun gagal. Lewat kabel persoalan itu tidak ada.
 
-Alamat server **tidak lagi ditulis di dalam kode**. Build debug otomatis
-menunjuk `http://127.0.0.1:8000/`, yang lewat kabel USB berarti laptopmu
-sendiri. Jadi tidak ada yang perlu diedit tiap pindah jaringan.
+### Lewat wifi atau alamat lain
 
-1. Buka project di Android Studio
-2. Colok HP ke laptop, nyalakan **USB debugging**
-3. Buka terowongan USB-nya:
-   ```bash
-   adb reverse tcp:8000 tcp:8000
-   ```
-4. Jalankan server Laravel di laptop (`php artisan serve`)
-5. Run ke device
-
-> Perintah `adb reverse` diulang tiap kali kabel dicabut atau adb restart.
-
-**Kenapa lewat kabel, bukan wifi?** Banyak router — termasuk bawaan ISP dan
-jaringan tamu — menyalakan *AP Isolation*, yang melarang perangkat di wifi yang
-sama saling menghubungi. Gejalanya membingungkan: HP dan laptop satu jaringan,
-IP-nya benar, tapi `ping` pun gagal dengan *Destination Host Unreachable*.
-Lewat kabel, seluruh persoalan itu tidak ada.
-
-#### Kalau tetap mau lewat wifi
-
-Buat berkas `local.properties` di akar project (berkas ini diabaikan git,
-jadi alamat laptopmu tidak ikut terkirim):
+Buat `local.properties` di akar proyek — berkas ini diabaikan git:
 
 ```properties
 riverop.baseUrl=http://192.168.1.8:8000/
 ```
 
-Ganti dengan IP laptopmu (`ipconfig` → IPv4 Address). Syaratnya AP Isolation
-di router harus mati, dan port 8000 diizinkan Windows Firewall:
+Server harus dijalankan dengan `php artisan serve --host=0.0.0.0`, dan port 8000
+diizinkan Windows Firewall.
 
-```
-netsh advfirewall firewall add rule name="RiverOP dev 8000" dir=in action=allow protocol=TCP localport=8000
-```
+### Mengganti alamat tanpa membangun ulang
 
-#### Build rilis
+Pada build debug, alamat server dapat diketik langsung dari aplikasi:
+**layar masuk → Uji koneksi server**. Berguna ketika alamatnya berubah-ubah,
+misalnya saat memakai terowongan sementara.
 
-Build rilis **tidak punya alamat bawaan** dan akan menolak jalan sampai diisi:
-
-```properties
-riverop.baseUrl.release=https://alamat-server-dinas.go.id/
-```
-
-Wajib `https://`. Build debug boleh `http://` biasa lewat manifest terpisah di
-`app/src/debug/`; build rilis tidak mendapat izin itu, sehingga sandi juru dan
-isi laporan tidak mungkin terkirim tanpa enkripsi.
-
-## Alur Penggunaan
-
-```
-Login
-  ↓
-Dashboard → Buat Laporan Baru
-  ↓
-Bagian 1: Info Umum (tanggal, cuaca, debit, foto lokasi)
-  ↓
-Bagian 2: Pilih Jenis Bangunan
-  ↓
-Bagian 3: Isi Kondisi per Bagian + Foto
-  ↓
-Simpan Draft (lanjut nanti) atau Kirim Laporan
-  ↓
-Sync ke Server (otomatis / manual)
-  ↓
-Status: SYNCED ✓
-```
-
-## Status Pengembangan
-
-### Android
-- [x] Autentikasi (login / logout)
-- [x] Buat laporan baru
-- [x] Simpan sebagai draft, lanjut di lain waktu
-- [x] Edit laporan draft (info umum + kondisi per bangunan)
-- [x] Tambah bangunan ke laporan yang sudah ada
-- [x] Sinkronisasi ke server (foto + data laporan)
-- [x] Tampilan detail laporan multi-bangunan
-- [x] Kompresi foto otomatis sebelum upload
-- [ ] Hapus data lokal otomatis setelah sync berhasil
-- [ ] Mode edit kondisi per bagian (FormBagian3 edit mode) — dalam pengerjaan
-
-### Backend
-- [x] REST API autentikasi (Sanctum)
-- [x] Endpoint sync data master
-- [x] Endpoint upload foto
-- [x] Endpoint sync laporan
-
-### Web Dashboard
-- [ ] Belum dimulai — direncanakan menggunakan Next.js
-
-## Rencana Deployment Production
-
-- VPS dengan domain resmi instansi
-- HTTPS via Let's Encrypt
-- Konfigurasi `APP_URL` di `.env` Laravel untuk URL foto yang konsisten
-
-## Catatan untuk Developer
-
-- Setiap perubahan skema Room (entity) harus disertai migration di `RiverOpDatabase.kt` dan uninstall app di device sebelum reinstall
-- IP server di `RetrofitClient.kt` harus diperbarui setiap pindah jaringan (development only)
-- Status DRAFT tidak akan pernah disync otomatis — hanya LOCAL dan FAILED yang diproses `SyncWorker`
-- Nama bagian bangunan di form diambil dari master data server (bukan hardcoded) untuk menghindari mismatch
+Build rilis mengunci kolom itu. Aplikasi yang boleh diarahkan ke server mana
+saja bisa diarahkan ke server palsu.
 
 ---
 
-*Dikembangkan untuk keperluan internal Dinas PUPR Provinsi Kalimantan Selatan.*
+## Membangun APK rilis
+
+Perlu dua berkas yang keduanya diabaikan git.
+
+**1. Alamat server produksi**, di `local.properties`:
+
+```properties
+riverop.baseUrl.release=https://alamat-dinas.go.id/
+```
+
+Wajib `https://`. Build rilis tidak punya alamat cadangan dan menolak berjalan
+tanpa ini — supaya APK yang menunjuk laptop pribadi tidak pernah terbagikan.
+
+**2. Kunci penanda tangan.** Dibuat sekali saja:
+
+```bash
+keytool -genkeypair -v -keystore riverop-rilis.jks -alias riverop -keyalg RSA -keysize 2048 -validity 10000
+```
+
+Lalu `keystore.properties` di akar proyek:
+
+```properties
+storeFile=riverop-rilis.jks
+storePassword=...
+keyAlias=riverop
+keyPassword=...
+```
+
+> **Kunci ini tidak dapat dibuat ulang.** Bila berkasnya hilang atau sandinya
+> lupa, aplikasi yang sudah terpasang di HP juru **tidak akan pernah bisa
+> diperbarui** — harus dicopot lalu dipasang ulang, dan laporan yang belum
+> terkirim ikut hilang. Simpan salinannya di tempat terpisah.
+
+Sesudah keduanya ada:
+
+```bash
+./gradlew assembleRelease
+```
+
+---
+
+## Alur pemakaian
+
+```
+Masuk
+  ↓
+Beranda → Buat Laporan Baru
+  ↓
+Bagian 1  info umum: tanggal, cuaca, debit, foto lokasi
+  ↓
+Bagian 2  pilih jenis bangunan
+  ↓
+Bagian 3  kondisi tiap bagian + foto + titik GPS
+  ↓
+Simpan Konsep  atau  Kirim Laporan
+  ↓
+Terkirim sendiri di latar begitu ada jaringan
+```
+
+---
+
+## Catatan untuk pemelihara
+
+**Perubahan skema Room** wajib disertai migrasi di `RiverOpDatabase.kt`. Basis
+data di HP juru berisi pekerjaan lapangan yang tidak bisa diulang; menaikkan
+versi tanpa migrasi akan menghapusnya.
+
+**Alamat server tidak boleh kembali ke dalam kode.** Ia dibaca dari
+`local.properties` lewat `build.gradle.kts`, dan `RetrofitClient` hanya
+menerimanya.
+
+**Nama bagian bangunan datang dari master data server**, bukan dari kode.
+Menuliskannya di kode akan membuatnya berbeda dengan blangko resmi begitu dinas
+memperbaruinya.
+
+**Cleartext hanya untuk debug.** Izinnya berada di
+`app/src/debug/AndroidManifest.xml` dan sengaja tidak diberikan ke build rilis.
+
+**Foto dihapus sesudah terkirim, laporannya tidak.** Laporan berstatus `SYNCED`
+tetap tersimpan sebagai riwayat karena juru sering perlu membukanya kembali di
+lapangan; hanya berkas fotonya yang dibuang untuk menghemat penyimpanan. Ini
+keputusan yang disengaja, bukan pekerjaan yang belum selesai.
+
+---
+
+*Dikembangkan untuk keperluan Dinas PUPR Provinsi Kalimantan Selatan.*
