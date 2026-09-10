@@ -23,13 +23,34 @@ data class LogoutResponse(
     val message: String
 )
 
+/**
+ * Balasan /api/master/profil.
+ *
+ * Bentuknya dulu datar — id, nama, username langsung di akar — padahal server
+ * membungkusnya dalam amplop {success, message, data} seperti seluruh titik
+ * akhir lain. Kekeliruan itu tidak pernah ketahuan karena getProfil() memang
+ * tidak pernah dipanggil siapa pun; Gson hanya akan mengisi seluruh kolomnya
+ * dengan nilai kosong tanpa mengeluh sedikit pun.
+ */
 data class ProfilResponse(
+    val success: Boolean,
+    val message: String,
+    val data: ProfilJuru?
+)
+
+data class ProfilJuru(
     val id: Int,
-    val nama: String,
-    val username: String,
+    val nama: String?,
+    val username: String?,
     // Juru sungai bukan PNS sehingga tidak punya NIP; server kini mengirim
     // nomor telepon, yang dipakai dinas untuk menghubungi mereka.
     val no_telepon: String?,
+    val das_id: Int?,
+    val das: DasProfil?
+)
+
+data class DasProfil(
+    val id: Int,
     val nama_das: String?
 )
 

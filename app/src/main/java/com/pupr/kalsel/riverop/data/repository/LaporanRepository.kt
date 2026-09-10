@@ -89,6 +89,9 @@ class LaporanRepository(private val database: RiverOpDatabase) {
         return laporanOpDao.getUnsyncedLaporan()
     }
 
+    /** Lihat LaporanOpDao.pulihkanYangTergantung(). */
+    suspend fun pulihkanYangTergantung(): Int = laporanOpDao.pulihkanYangTergantung()
+
     suspend fun getLaporanByUuid(uuid: String): LaporanOpEntity? {
         return laporanOpDao.getLaporanByUuid(uuid)
     }

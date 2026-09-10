@@ -9,34 +9,41 @@ import android.widget.Toast
 import com.pupr.kalsel.riverop.BuildConfig
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
-import com.pupr.kalsel.riverop.MainActivity
+import androidx.lifecycle.lifecycleScope
+import com.pupr.kalsel.riverop.data.remote.RetrofitClient
 import com.pupr.kalsel.riverop.databinding.ActivityLoginBinding
 import com.pupr.kalsel.riverop.ui.dashboard.DashboardActivity
 import com.pupr.kalsel.riverop.utils.PrefsHelper
+import com.pupr.kalsel.riverop.utils.SesiJuru
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 
 private const val SESSION_DURATION_MS = 30L * 24 * 60 * 60 * 1000
 
+/**
+ * Batas menunggu jawaban server saat memeriksa sesi.
+ *
+ * Klien Retrofit menunggu tiga puluh detik, dan itu benar untuk mengirim
+ * laporan — pekerjaan yang boleh lama asal berhasil. Tetapi di sini juru
+ * sedang menatap layar pembuka: tiga puluh detik diam terbaca sebagai
+ * aplikasi rusak, dan ia akan menutupnya sebelum sempat masuk. Enam detik
+ * cukup untuk jaringan desa yang lambat tetapi hidup; lebih dari itu
+ * dianggap tidak terjangkau, dan juru dipersilakan masuk apa adanya.
+ */
+private const val BATAS_PERIKSA_MS = 6_000L
+
 class LoginActivity : AppCompatActivity() {
+
+    companion object {
+        /** Alasan juru dikeluarkan, dikirim dari layar yang mengeluarkannya. */
+        const val EXTRA_ALASAN = "EXTRA_ALASAN"
+    }
 
     private lateinit var binding: ActivityLoginBinding
     private lateinit var viewModel: LoginViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val sharedPrefs = PrefsHelper.get(this)
-        val authToken = sharedPrefs.getString("auth_token", null)
-        if (!authToken.isNullOrEmpty()) {
-            val loginTimestamp = sharedPrefs.getLong("login_timestamp", 0L)
-            val isExpired = loginTimestamp > 0L &&
-                System.currentTimeMillis() - loginTimestamp > SESSION_DURATION_MS
-            if (isExpired) {
-                sharedPrefs.edit().clear().apply()
-            } else {
-                startActivity(Intent(this, DashboardActivity::class.java))
-                finish()
-                return
-            }
-        }
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -78,6 +85,86 @@ class LoginActivity : AppCompatActivity() {
         // Versi ditulis dari BuildConfig, bukan diketik di tata letak, supaya
         // tidak pernah berbohong sesudah versinya naik.
         binding.tvVersi.text = "Versi ${BuildConfig.VERSION_NAME}"
+
+        // Alasan dari layar yang mengeluarkan juru menang atas pemeriksaan
+        // apa pun: sesinya memang sudah dibuang di sana, tidak ada lagi yang
+        // perlu ditanyakan ke server.
+        val alasan = intent.getStringExtra(EXTRA_ALASAN)
+        if (alasan != null) {
+            tampilkanAlasan(alasan)
+        } else {
+            periksaSesiTersimpan()
+        }
+    }
+
+    /**
+     * Menentukan apakah juru boleh langsung masuk tanpa mengetik lagi.
+     *
+     * Sebelum ini keputusannya dibuat sendirian oleh HP: ada token, jamnya
+     * belum lewat tiga puluh hari, masuk. Server tidak pernah ditanya sama
+     * sekali. Akibatnya juru yang akunnya sudah dinonaktifkan dinas tetap
+     * dipersilakan bekerja seharian, dan tidak satu pun laporannya sampai —
+     * sesuatu yang baru ia ketahui ketika ditelepon.
+     *
+     * Kini server ditanya lebih dulu, tetapi HANYA jawaban "kamu ditolak" yang
+     * mengeluarkannya. Jaringan mati, server tumbang, atau balasan aneh apa pun
+     * tetap dianggap boleh masuk. Aturannya sengaja berat sebelah: aplikasi ini
+     * dipakai di tepi sungai tanpa sinyal, dan mengunci juru di luar aplikasinya
+     * sendiri hanya karena servernya sedang tidak terjangkau adalah kerusakan
+     * yang jauh lebih besar daripada yang sedang dicegah.
+     */
+    private fun periksaSesiTersimpan() {
+        val prefs = PrefsHelper.get(this)
+        val token = prefs.getString("auth_token", null)
+
+        if (token.isNullOrEmpty()) return
+
+        val masuk = prefs.getLong("login_timestamp", 0L)
+        if (masuk > 0L && System.currentTimeMillis() - masuk > SESSION_DURATION_MS) {
+            SesiJuru.bersihkan(this)
+            tampilkanAlasan("Sesi 30 hari sudah habis. Masuk lagi ya — laporan yang belum terkirim tetap aman.")
+            return
+        }
+
+        tampilkanPemeriksaan(true)
+
+        lifecycleScope.launch {
+            val ditolak = withTimeoutOrNull(BATAS_PERIKSA_MS) {
+                try {
+                    RetrofitClient.getApiService().getProfil(token).code() == 401
+                } catch (e: Exception) {
+                    // Tidak terjangkau. Bukan penolakan.
+                    false
+                }
+            } ?: false
+
+            if (ditolak) {
+                SesiJuru.bersihkan(this@LoginActivity)
+                tampilkanPemeriksaan(false)
+                tampilkanAlasan(
+                    "Sesi di HP ini sudah tidak berlaku. Masuk lagi ya — kalau tetap " +
+                        "ditolak, hubungi petugas dinas."
+                )
+            } else {
+                keDasbor()
+            }
+        }
+    }
+
+    private fun keDasbor() {
+        startActivity(Intent(this, DashboardActivity::class.java))
+        finish()
+    }
+
+    private fun tampilkanPemeriksaan(sedang: Boolean) {
+        binding.grupMasuk.visibility = if (sedang) View.INVISIBLE else View.VISIBLE
+        binding.tvMemeriksa.visibility = if (sedang) View.VISIBLE else View.GONE
+        binding.progressBar.visibility = if (sedang) View.VISIBLE else View.GONE
+    }
+
+    private fun tampilkanAlasan(pesan: String) {
+        binding.tvAlasan.text = pesan
+        binding.tvAlasan.visibility = View.VISIBLE
     }
 
     private fun cobaMasuk() {

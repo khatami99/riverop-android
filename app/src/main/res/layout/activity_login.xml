@@ -80,6 +80,44 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
+        <!-- Ditampilkan selama aplikasi menanyakan ke server apakah sesi yang
+             tersimpan masih berlaku. Tanpa keadaan ini, juru yang membuka
+             aplikasi akan melihat formulir kosong berkelebat sepersekian detik
+             sebelum terlempar ke dasbor — terlihat seperti aplikasi yang
+             tersendat, padahal sedang bekerja. -->
+        <TextView
+            android:id="@+id/tvMemeriksa"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="48dp"
+            android:text="Memeriksa sesi…"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/kop" />
+
+        <!-- Alasan sesi sebelumnya berakhir. Kosong pada pembukaan biasa;
+             tanpa ini juru yang tiba-tiba diminta masuk lagi tidak punya cara
+             tahu apakah ia salah pencet, aplikasinya rusak, atau ada sesuatu
+             yang memang berubah di kantor dinas. -->
+        <TextView
+            android:id="@+id/tvAlasan"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="24dp"
+            android:background="@drawable/bg_alasan_sesi"
+            android:padding="12dp"
+            android:textColor="@color/warn_text"
+            android:textSize="13sp"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/kop" />
+
         <!-- Menyebut siapa yang masuk di sini. Aplikasi ini hanya untuk juru;
              staf dinas memakai dasbor web, dan tanpa keterangan ini mereka
              akan mencoba masuk memakai akun web lalu mengira sistemnya rusak. -->
@@ -94,7 +132,7 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/kop" />
+            app:layout_constraintTop_toBottomOf="@+id/tvAlasan" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilUsername"
@@ -192,6 +230,15 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/btnLogin"
             app:layout_constraintVertical_bias="1" />
+
+        <!-- Satu sakelar untuk seluruh formulir. Dipakai menyembunyikannya
+             selagi sesi diperiksa, tanpa harus menyentuh lima tampilan satu
+             per satu di dalam kode. -->
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/grupMasuk"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:constraint_referenced_ids="tvUntukJuru,tilUsername,tilPassword,btnLogin,tvVersi" />
 
         <ProgressBar
             android:id="@+id/progressBar"

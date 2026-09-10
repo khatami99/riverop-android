@@ -25,6 +25,7 @@ import com.pupr.kalsel.riverop.ui.laporan.DetailLaporanActivity
 import androidx.core.content.ContextCompat
 import com.pupr.kalsel.riverop.utils.KabarSinkronisasi
 import com.pupr.kalsel.riverop.utils.PrefsHelper
+import com.pupr.kalsel.riverop.utils.SesiJuru
 import com.pupr.kalsel.riverop.utils.SessionManager
 import com.google.gson.Gson
 import com.pupr.kalsel.riverop.data.remote.RetrofitClient
@@ -85,7 +86,12 @@ class DashboardActivity : AppCompatActivity() {
         }
         val sharedPrefs = PrefsHelper.get(this)
         binding.tvWilayahSungai.text = "DAS: ${sharedPrefs.getString("nama_das", "-")}"
-        SessionManager.onUnauthorized = { performLogout() }
+        // Bila server menolak token selagi layar ini terbuka, juru dikeluarkan
+        // beserta alasannya. Tanpa alasan, ia cuma melihat dirinya terlempar ke
+        // layar masuk tanpa sebab dan akan mengira aplikasinya rusak.
+        SessionManager.onUnauthorized = {
+            performLogout("Sesi di HP ini sudah tidak berlaku. Masuk lagi ya — kalau tetap ditolak, hubungi petugas dinas.")
+        }
     }
 
     private fun isSessionExpired(): Boolean {
@@ -296,18 +302,12 @@ class DashboardActivity : AppCompatActivity() {
         }
     }
 
-    private fun performLogout() {
-        PrefsHelper.get(this).edit().clear().apply()
-
-        val defaultPrefs = getSharedPreferences("${packageName}_preferences", MODE_PRIVATE)
-        defaultPrefs.edit().clear().apply()
-
-        val workManager = WorkManager.getInstance(applicationContext)
-        workManager.cancelUniqueWork("river_op_sync")
-        workManager.cancelUniqueWork("river_op_manual_sync")
+    private fun performLogout(alasan: String? = null) {
+        SesiJuru.bersihkan(this)
 
         val intent = Intent(this, LoginActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        alasan?.let { intent.putExtra(LoginActivity.EXTRA_ALASAN, it) }
         startActivity(intent)
         finish()
     }

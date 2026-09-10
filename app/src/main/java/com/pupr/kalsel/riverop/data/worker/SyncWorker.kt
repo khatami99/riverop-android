@@ -14,11 +14,25 @@ import com.pupr.kalsel.riverop.data.repository.LaporanRepository
 import com.pupr.kalsel.riverop.models.SyncStatus
 import com.pupr.kalsel.riverop.utils.KabarSinkronisasi
 import com.pupr.kalsel.riverop.utils.PrefsHelper
+import com.pupr.kalsel.riverop.utils.SesiJuru
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
 import java.io.IOException
+
+/**
+ * Server menolak sesi HP ini.
+ *
+ * Dibuat sebagai jenis tersendiri, bukan ditangani di tempat, karena
+ * penolakan bisa datang dari dua tempat yang berjauhan — saat mengunggah foto
+ * dan saat mengirim laporan — sedangkan penanganannya harus satu dan sama:
+ * hentikan seluruh pekerjaan, buang sesinya, lalu kabari juru. Bila ditangani
+ * di tempat, jalur unggah foto akan tertelan penangkap Exception di bawahnya
+ * dan berubah menjadi sekadar "laporan gagal terkirim" — pesan yang menyuruh
+ * juru menunggu jaringan, padahal menunggu tidak akan menolongnya sama sekali.
+ */
+private class SesiDitolak : Exception("Sesi ditolak server")
 
 class SyncWorker(
     context: Context,
@@ -35,6 +49,11 @@ class SyncWorker(
         val repo = LaporanRepository(db)
 
         return try {
+            // Dibereskan lebih dulu: laporan yang membeku berstatus SYNCING
+            // karena percobaan sebelumnya mati di tengah jalan tidak akan
+            // pernah dijemput getUnsyncedLaporan().
+            repo.pulihkanYangTergantung()
+
             val pending = repo.getUnsyncedLaporan()
             if (pending.isEmpty()) {
                 laporStatus(repo, token, null)
@@ -115,7 +134,7 @@ class SyncWorker(
                     val response = RetrofitClient.getApiService().syncLaporan(token, payload)
 
                     when {
-                        response.code() == 401 -> return Result.failure()
+                        response.code() == 401 -> throw SesiDitolak()
                         response.isSuccessful -> {
                             repo.updateSyncStatus(laporan.uuid, SyncStatus.SYNCED)
                             deleteLocalPhotos(laporan, itemInspeksi, temuanLocalPaths)
@@ -128,6 +147,14 @@ class SyncWorker(
                         }
                     }
 
+                } catch (e: SesiDitolak) {
+                    // Bukan kegagalan laporan ini, melainkan kegagalan seluruh
+                    // HP. Dikembalikan ke LOCAL — bukan FAILED — supaya sesudah
+                    // juru masuk lagi ia terkirim seperti laporan baru, dan
+                    // tidak terlanjur terhitung sebagai gagal di halaman
+                    // Sinkronisasi dinas.
+                    repo.updateSyncStatus(laporan.uuid, SyncStatus.LOCAL)
+                    throw e
                 } catch (e: Exception) {
                     android.util.Log.e("SyncWorker", "Error sync laporan ${laporan.uuid}: ${e.message}", e)
                     repo.updateSyncStatus(laporan.uuid, SyncStatus.FAILED)
@@ -155,6 +182,9 @@ class SyncWorker(
 
             if (hasFailure) Result.retry() else Result.success()
 
+        } catch (e: SesiDitolak) {
+            tanganiSesiDitolak()
+            Result.failure()
         } catch (e: Exception) {
             android.util.Log.e("SyncWorker", "doWork fatal error: ${e.message}", e)
             laporStatus(repo, token, e.message?.take(255))
@@ -175,8 +205,14 @@ class SyncWorker(
             val versi = applicationContext.packageManager
                 .getPackageInfo(applicationContext.packageName, 0).versionName
 
+            // Tanpa "Bearer " di depan: nilai yang tersimpan di preferensi
+            // SUDAH memuatnya (lihat LoginViewModel). Sebelumnya di sini
+            // ditambahkan sekali lagi sehingga terkirim "Bearer Bearer xxx",
+            // dan itu lolos hanya karena Laravel kebetulan memungut potongan
+            // "Bearer " yang paling belakang. Seluruh pemanggilan lain di
+            // aplikasi ini memakai token apa adanya.
             RetrofitClient.getApiService().laporStatusSinkronisasi(
-                "Bearer $token",
+                token,
                 StatusSinkronisasiRequest(
                     jumlah_tertunda = repo.hitungBerstatus(SyncStatus.LOCAL),
                     jumlah_gagal = repo.hitungBerstatus(SyncStatus.FAILED),
@@ -190,6 +226,24 @@ class SyncWorker(
         }
     }
 
+    /**
+     * Menutup sesi yang sudah ditolak server, lalu memberi tahu juru.
+     *
+     * Sebelum ini penolakan 401 hanya menghasilkan Result.failure() tanpa
+     * suara: tokennya tetap tersimpan, pekerjaan berkala tetap terjadwal, dan
+     * HP itu mengetuk server dengan token mati tiap lima belas menit tanpa
+     * batas. Juru sendiri tidak pernah diberi tahu — ia terus mencatat, dan
+     * yang lebih dulu mengetahui keanehannya justru dinas.
+     *
+     * Sengaja TIDAK mencoba mengabarkan status ke server: permintaan itu
+     * memakai token yang sama dan pasti ikut ditolak.
+     */
+    private fun tanganiSesiDitolak() {
+        android.util.Log.w("SyncWorker", "Sesi ditolak server, sesi dibuang.")
+        SesiJuru.bersihkan(applicationContext)
+        KabarSinkronisasi.sesiBerakhir(applicationContext)
+    }
+
     private suspend fun uploadFotoIfLocal(path: String?, token: String): String? {
         if (path.isNullOrBlank()) return null
         if (path.startsWith("http")) return null
@@ -200,10 +254,10 @@ class SyncWorker(
         val requestFile = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
         val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
         val response = RetrofitClient.getApiService().uploadFoto(token, body)
-        return if (response.isSuccessful) {
-            response.body()?.url
-        } else {
-            throw IOException("Gagal upload foto (${response.code()})")
+        return when {
+            response.isSuccessful -> response.body()?.url
+            response.code() == 401 -> throw SesiDitolak()
+            else -> throw IOException("Gagal upload foto (${response.code()})")
         }
     }
 

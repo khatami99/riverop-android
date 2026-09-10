@@ -13,6 +13,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.pupr.kalsel.riverop.R
 import com.pupr.kalsel.riverop.ui.dashboard.DashboardActivity
+import com.pupr.kalsel.riverop.ui.login.LoginActivity
 
 /**
  * Kabar kepada juru mengenai nasib laporannya.
@@ -40,10 +41,23 @@ object KabarSinkronisasi {
 
     private const val SALURAN = "sinkronisasi"
 
+    /**
+     * Sesi yang berakhir diberi salurannya sendiri, dan ini bukan kerapian.
+     *
+     * Aturan pertama di atas membuat kabar sinkronisasi sengaja dibuat tenang
+     * dan mudah diabaikan. Tetapi kabar sesi berakhir justru menuntut juru
+     * berbuat sesuatu: selama ia tidak masuk ulang, tidak ada satu pun
+     * laporannya yang bisa terkirim. Bila keduanya berbagi saluran, juru yang
+     * membisukan kabar rutin ikut membisukan satu-satunya kabar yang benar-
+     * benar harus ia baca — dan ia baru sadar berminggu-minggu kemudian.
+     */
+    private const val SALURAN_SESI = "sesi"
+
     // Id tetap dan berbeda per jenis: kabar sejenis saling menimpa alih-alih
     // menumpuk, tetapi kabar berhasil tidak menghapus kabar gagal.
     private const val ID_BERHASIL = 1001
     private const val ID_GAGAL = 1002
+    private const val ID_SESI = 1003
 
     fun siapkanSaluran(context: Context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
@@ -56,6 +70,24 @@ object KabarSinkronisasi {
             NotificationManager.IMPORTANCE_DEFAULT
         ).apply {
             description = "Kabar saat laporan berhasil atau gagal terkirim ke dinas."
+        }
+
+        context.getSystemService(NotificationManager::class.java)
+            ?.createNotificationChannel(saluran)
+    }
+
+    private fun siapkanSaluranSesi(context: Context) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+
+        val saluran = NotificationChannel(
+            SALURAN_SESI,
+            "Sesi masuk",
+            // HIGH, berbeda dengan saluran sinkronisasi: selama juru belum
+            // masuk ulang, seluruh pekerjaannya tertahan di HP. Ini satu-satunya
+            // kabar dari aplikasi ini yang pantas memotong apa pun.
+            NotificationManager.IMPORTANCE_HIGH
+        ).apply {
+            description = "Kabar saat juru harus masuk ulang ke aplikasi."
         }
 
         context.getSystemService(NotificationManager::class.java)
@@ -97,7 +129,43 @@ object KabarSinkronisasi {
         NotificationManagerCompat.from(context).cancel(ID_GAGAL)
     }
 
-    private fun tampilkan(context: Context, id: Int, judul: String, isi: String) {
+    /**
+     * Mengabarkan bahwa server menolak sesi juru.
+     *
+     * Sebelum ada kabar ini, penolakan itu sepenuhnya bisu: pekerja latar
+     * berhenti, laporan tetap bertumpuk di HP, dan juru terus mencatat tanpa
+     * tahu bahwa tidak ada satu pun yang sampai ke dinas. Yang lebih dulu
+     * mengetahuinya justru dinas, lewat halaman Sinkronisasi — juru baru sadar
+     * ketika ditelepon.
+     *
+     * Kabar gagal biasa ikut ditarik, sebab ia menyuruh juru menunggu jaringan,
+     * dan menunggu tidak akan menyelesaikan apa pun di sini.
+     */
+    fun sesiBerakhir(context: Context) {
+        bersihkanGagal(context)
+
+        tampilkan(
+            context,
+            ID_SESI,
+            "Perlu masuk ulang",
+            "Sesi di HP ini sudah tidak berlaku, jadi laporan tidak bisa dikirim " +
+                "ke dinas. Ketuk untuk masuk lagi — laporan yang sudah dicatat " +
+                "tetap aman dan akan terkirim sesudahnya.",
+            SALURAN_SESI,
+            Intent(context, LoginActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        )
+    }
+
+    private fun tampilkan(
+        context: Context,
+        id: Int,
+        judul: String,
+        isi: String,
+        saluran: String = SALURAN,
+        tujuan: Intent = Intent(context, DashboardActivity::class.java)
+            .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+    ) {
         // Sejak Android 13 notifikasi perlu izin, dan menembakkannya tanpa izin
         // melempar SecurityException. Kegagalan berkabar tidak boleh
         // menjatuhkan sinkronisasi yang justru berhasil.
@@ -108,24 +176,26 @@ object KabarSinkronisasi {
             return
         }
 
-        siapkanSaluran(context)
+        if (saluran == SALURAN_SESI) siapkanSaluranSesi(context) else siapkanSaluran(context)
 
         val buka = PendingIntent.getActivity(
             context,
             id,
-            Intent(context, DashboardActivity::class.java)
-                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP),
+            tujuan,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val kabar = NotificationCompat.Builder(context, SALURAN)
+        val kabar = NotificationCompat.Builder(context, saluran)
             .setSmallIcon(R.drawable.ic_stat_sinkronisasi)
             .setContentTitle(judul)
             .setContentText(isi)
             // Kalimatnya panjang dan justru bagian akhirnya yang menenangkan,
             // jadi harus bisa dibaca utuh saat notifikasinya dibentangkan.
             .setStyle(NotificationCompat.BigTextStyle().bigText(isi))
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setPriority(
+                if (saluran == SALURAN_SESI) NotificationCompat.PRIORITY_HIGH
+                else NotificationCompat.PRIORITY_DEFAULT
+            )
             .setContentIntent(buka)
             .setAutoCancel(true)
             .build()

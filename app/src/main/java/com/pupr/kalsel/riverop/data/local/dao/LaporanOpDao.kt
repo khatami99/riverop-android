@@ -33,4 +33,17 @@ interface LaporanOpDao {
 
     @Query("SELECT COUNT(*) FROM laporan_op WHERE sync_status = :status")
     suspend fun hitungBerstatus(status: String): Int
+
+    /**
+     * Mengembalikan laporan yang tertinggal berstatus SYNCING menjadi LOCAL.
+     *
+     * SYNCING hanya sah selagi pekerja sinkronisasi benar-benar sedang berjalan.
+     * Bila prosesnya mati di tengah jalan — Android membunuhnya karena memori
+     * menipis, HP dimatikan, atau sesinya ditolak server — statusnya membeku di
+     * sana. Dan SYNCING tidak termasuk yang dijemput getUnsyncedLaporan(),
+     * sehingga laporan itu tidak akan pernah dicoba lagi: ia hilang diam-diam
+     * tanpa pernah tampak sebagai gagal.
+     */
+    @Query("UPDATE laporan_op SET sync_status = 'LOCAL' WHERE sync_status = 'SYNCING'")
+    suspend fun pulihkanYangTergantung(): Int
 }
