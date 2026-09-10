@@ -14,6 +14,7 @@ import com.pupr.kalsel.riverop.data.remote.RetrofitClient
 import com.pupr.kalsel.riverop.databinding.ActivityLoginBinding
 import com.pupr.kalsel.riverop.ui.dashboard.DashboardActivity
 import com.pupr.kalsel.riverop.utils.PrefsHelper
+import com.pupr.kalsel.riverop.utils.DiagnosaKoneksi
 import com.pupr.kalsel.riverop.utils.SesiJuru
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
@@ -69,6 +70,8 @@ class LoginActivity : AppCompatActivity() {
         }
 
         binding.btnLogin.setOnClickListener { cobaMasuk() }
+
+        binding.tvUjiKoneksi.setOnClickListener { DiagnosaKoneksi.tampilkan(this) }
 
         // Papan ketik menutupi tombol Masuk di layar kecil, sehingga juru harus
         // menutupnya dulu sebelum bisa menekan tombolnya. Tombol centang pada

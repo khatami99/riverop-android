@@ -44,7 +44,15 @@ object RetrofitClient {
                 .readTimeout(30, TimeUnit.SECONDS)
                 .writeTimeout(30, TimeUnit.SECONDS)
                 .addInterceptor { chain ->
-                    val response = chain.proceed(chain.request())
+                    // Tanpa header ini Laravel mengalihkan permintaan tak
+                    // terautentikasi ke halaman login web, dan OkHttp mengikuti
+                    // pengalihan itu sampai mendapat HTML berkode 200 —
+                    // terbaca sebagai berhasil padahal laporannya tidak sampai.
+                    val permintaan = chain.request().newBuilder()
+                        .header("Accept", "application/json")
+                        .build()
+
+                    val response = chain.proceed(permintaan)
                     if (response.code == 401) {
                         SessionManager.notifyUnauthorized()
                     }

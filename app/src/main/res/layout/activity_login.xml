@@ -228,8 +228,28 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/btnLogin"
+            app:layout_constraintTop_toBottomOf="@+id/tvUjiKoneksi"
             app:layout_constraintVertical_bias="1" />
+
+        <!-- Ditaruh di layar masuk karena di sinilah kegagalan jaringan pertama
+             kali terasa: juru menekan Masuk, dan tidak terjadi apa-apa. -->
+        <TextView
+            android:id="@+id/tvUjiKoneksi"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:paddingStart="12dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="8dp"
+            android:text="Uji koneksi server"
+            android:textColor="@color/primary_light"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnLogin" />
 
         <!-- Satu sakelar untuk seluruh formulir. Dipakai menyembunyikannya
              selagi sesi diperiksa, tanpa harus menyentuh lima tampilan satu
@@ -238,7 +258,7 @@
             android:id="@+id/grupMasuk"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:constraint_referenced_ids="tvUntukJuru,tilUsername,tilPassword,btnLogin,tvVersi" />
+            app:constraint_referenced_ids="tvUntukJuru,tilUsername,tilPassword,btnLogin,tvUjiKoneksi,tvVersi" />
 
         <ProgressBar
             android:id="@+id/progressBar"

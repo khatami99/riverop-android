@@ -21,6 +21,11 @@ interface ApiService {
         @Header("Authorization") token: String
     ): Response<LogoutResponse>
 
+    // Sengaja tanpa Authorization: jawaban 401 sudah membuktikan server
+    // terjangkau DAN memang server RiverOP, tanpa perlu sesi yang sah.
+    @GET("api/master/sync")
+    suspend fun ujiKoneksi(): Response<Unit>
+
     @GET("api/master/sync")
     suspend fun syncMaster(
         @Header("Authorization") token: String
